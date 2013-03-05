@@ -1,0 +1,9 @@
+{
+    "source": "github",
+    "owner": "jillix",
+    "name": "login",
+    "main": "main.js",
+    "operations": [
+        { "file": "operations.js", "function": "login" }
+    ]
+}
