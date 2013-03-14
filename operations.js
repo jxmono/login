@@ -67,7 +67,7 @@ exports.login = function(link) {
 
         // TODO read the users in other way???
         //      probably with the removal of users from orient
-        var orientUser = user.l ? "user" : "admin";
+        var orientUser = user.gpmail ? "user" : "admin";
 
         getOrientUser(link, orientUser, function(err) {
 
@@ -118,9 +118,10 @@ function api_customCode(appId, handler, callback) {
         delete require.cache[path];
 
         var module = require(path);
+        var func = module[functionName];
 
-        if (module[functionName]) {
-            return callback(null, module[functionName]);
+        if (func && typeof func === "function") {
+            return callback(null, func);
         }
 
         throw new Error("Function '" + functionName + "' not found in module: " + modulePath);
