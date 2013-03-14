@@ -6,9 +6,6 @@ define(["/jquery.min.js"], function() {
 
     function init(conf) {
 
-        // TODO remove this from here
-        this.lang = "de";
-
         self = this;
         config = conf;
 

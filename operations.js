@@ -33,6 +33,9 @@ exports.login = function(link) {
         return;
     }
 
+    link.params = link.params || {};
+    link.params.on = link.params.on || {};
+
     // TODO validate inputs: strings and trim
     var username = data.username;
     var password = data.password;
@@ -40,8 +43,10 @@ exports.login = function(link) {
     var remember = data.remember;
 
     if (!username || !password) {
-        send.badrequest(link, !username ? "Missing username" : "Missing password");
-        return;
+        var errCode = username ? ERROR_MISSING_PASSWORD : ERROR_MISSING_USERNAME;
+        return error(errCode, function(err) {
+            send.badrequest(link, err.toString());
+        });
     }
 
     // TODO do some transformation on the username
@@ -50,11 +55,17 @@ exports.login = function(link) {
     getUser(link.params, username, password, function(err, user) {
 
         if (err) {
+            if (err.code) {
+                onError(link, err, function() {
+                    send.forbidden(link, err.toString());
+                });
+                return;
+            }
             send.badrequest(link, err);
             return;
         }
 
-        // TODO read thos users in other way???
+        // TODO read the users in other way???
         //      probably with the removal of users from orient
         var orientUser = user.l ? "user" : "admin";
 
@@ -78,6 +89,48 @@ exports.login = function(link) {
     })
 };
 
+function onError(link, err, callback) {
+
+    var handler = link.params.on.error;
+
+    // no custom error handler specified
+    if (!handler) {
+        return callback();
+    }
+
+    api_customCode(link.session.appid, handler, function(err1, foo) {
+
+        if (err1) {
+            return callback()
+        }
+        foo(link, err, callback);
+    });
+}
+
+function api_customCode(appId, handler, callback) {
+    try {
+        var modulePath = handler["module"];
+        var functionName = handler["function"];
+        var path = CONFIG.APPLICATION_ROOT + appId + "/" + modulePath;
+
+        // TODO do this only in debug mode
+        //      even so it is still problematic it the module caches data in RAM
+        delete require.cache[path];
+
+        var module = require(path);
+
+        if (module[functionName]) {
+            return callback(null, module[functionName]);
+        }
+
+        throw new Error("Function '" + functionName + "' not found in module: " + modulePath);
+
+    } catch (err) {
+        console.error(err);
+        callback(err);
+    }
+}
+
 function getOrientUser(link, username, callback) {
 
     var appId = link.req.session.appid;
@@ -93,9 +146,13 @@ function getOrientUser(link, username, callback) {
 
         callback(null);
     });
-
 }
+
 function getUser(params, username, password, callback) {
+
+    if (!params) {
+        return callback(new Error("Missing operation parameters"));
+    }
 
     var dataSource = dataSources[params.ds];
 
@@ -128,7 +185,7 @@ function getUser(params, username, password, callback) {
                 case "none":
                     break;
                 default:
-                    return callback(params.hash ? "Missging hash algorithm" : "Invalid hash algorithms");
+                    return callback(params.hash ? "Missing hash algorithm" : "Invalid hash algorithm");
             }
 
             var filter = {};
@@ -140,7 +197,7 @@ function getUser(params, username, password, callback) {
                 if (err) { return callback(err); }
 
                 if (!doc) {
-                    return callback("User or password not valid");
+                    return error(ERROR_USER_OR_PASS_NOT_VALID, callback);
                 }
 
                 callback(null, doc);
@@ -148,6 +205,29 @@ function getUser(params, username, password, callback) {
         });
     });
 }
+
+function error(code, callback) {
+    var message = ERRORS[code];
+    var err = null;
+    if (message) {
+        err = new Error(message);
+        err.code = code;
+    } else {
+        err = new Error("Unknown error");
+        err.code = 1;
+    }
+    callback(err);
+}
+
+var ERROR_USER_OR_PASS_NOT_VALID = 101;
+var ERROR_MISSING_USERNAME = 102;
+var ERROR_MISSING_PASSWORD = 103;
+
+var ERRORS = {
+    "101": "User or password not valid",
+    "102": "Missing username",
+    "103": "Missing password"
+};
 
 function openDatabase(dataSource, callback) {
 
