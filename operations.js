@@ -8,19 +8,6 @@ exports.login = function(link) {
         return;
     }
 
-link.params = {
-    "ds": "usersDS",
-    "hash": "none",
-    "userkey": "username",
-    "passkey": "password",
-    "on": {
-        "error": {
-            "module": "custom.js",
-            "function": "readRemoteUser"
-        }
-    }
-};
-
     var data = link.data;
     if (!data) {
         link.send(400, 'Missing login data');
