@@ -8,6 +8,19 @@ exports.login = function(link) {
         return;
     }
 
+link.params = {
+    "ds": "usersDS",
+    "hash": "none",
+    "userkey": "username",
+    "passkey": "password",
+    "on": {
+        "error": {
+            "module": "custom.js",
+            "function": "readRemoteUser"
+        }
+    }
+};
+
     var data = link.data;
     if (!data) {
         link.send(400, 'Missing login data');
@@ -51,7 +64,7 @@ exports.login = function(link) {
 
         // TODO harcoded role and user IDs and locale
         M.session.start(link, 2, 120, 'de', data, function(err, session) {
-            link.send(200, {});
+            link.send(200);
         });
     });
 };
