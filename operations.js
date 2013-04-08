@@ -44,7 +44,7 @@ exports.login = function(link) {
             return;
         }
 
-        getUserInfo(user, link, function(err, userInfo) {
+        getUserInfo(link, user, function(err, userInfo) {
 
             if (err) {
                 link.send(500, 'Could not determine user information');
