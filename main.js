@@ -1,4 +1,4 @@
-define(["/jquery.min.js"], function() {
+define([], function() {
 
     var self;
     var form;
