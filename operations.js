@@ -44,17 +44,36 @@ exports.login = function(link) {
             return;
         }
 
-        var data = {
-            cid: user.cid,
-            name: user.fullname
-        };
+        getUserInfo(user, link, function(err, userInfo) {
 
-        // TODO harcoded role and user IDs and locale
-        M.session.start(link, 2, 120, 'de', data, function(err, session) {
-            link.send(200);
+            if (err) {
+                link.send(500, 'Could not determine user information');
+                return;
+            }
+
+            M.session.start(link, userInfo.rid, userInfo.uid, userInfo.locale, userInfo.data, function(err, session) {
+                link.send(200);
+            });
         });
     });
 };
+
+function getUserInfo(link, user, callback) {
+
+    var handler = link.params.on.userInfo;
+
+    // no userInfo handler specified
+    if (!handler) {
+        return callback('You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
+    }
+
+    api_customCode(handler, function(err, foo) {
+
+        if (err) { return callback('Could not find the userInfo handler') }
+
+        foo(link, user, callback);
+    });
+}
 
 function onError(link, initialError, callback) {
 
