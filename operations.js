@@ -1,5 +1,35 @@
 var crypto = require('crypto');
 
+exports.logout = function(link) {
+
+    M.session.get(link, function(link) {
+
+        if (!link.session._uid) {
+            link.send(400, 'You are not logged in');
+            return;
+        }
+
+        link.session.end(true, function() {
+            link.send(200);
+        });
+    });
+};
+
+exports.userInfo = function(link) {
+
+    M.session.get(link, function(link) {
+
+        // we intentionally do not reply with a non-200 status
+        // because we want to avoid the browser showing an error
+        if (!link.session._uid) {
+            link.send(200);
+            return;
+        }
+
+        // TODO remove critical or unnecessary data from the session
+        link.send(200, link.session);
+    });
+};
 
 exports.login = function(link) {
 
