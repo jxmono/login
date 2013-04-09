@@ -10,13 +10,42 @@ define([], function() {
         config = conf;
 
         // TODO process options as function
+        config.loginPage = config.loginPage || "/login";
         config.successPage = config.successPage || "/";
 
-        // cache the form and add the submit handler
-        form = $(self.dom).find("form").first();
-        form.submit(function() {
-            submitForm();
-            return false;
+        self.link("userInfo", function(err, data) {
+
+            if (err) {
+                alert(err);
+                return;
+            }
+
+            // the user is logged in
+            if (data) {
+                $(self.dom).find(".logout").show();
+                $(self.dom).find("#logoutButton").on("click", function() {
+                    self.link("logout", function(err, data) {
+                        window.location = config.loginPage;
+                    });
+                });
+
+                return;
+            }
+
+            if (window.location.pathname !== config.loginPage) {
+                window.location = config.loginPage;
+                return;
+            }
+
+            // the user is not logged in
+            $(self.dom).find(".login").show();
+
+            // cache the form and add the submit handler
+            form = $(self.dom).find("form#login").first().show();
+            form.submit(function() {
+                submitForm();
+                return false;
+            });
         });
     }
 
