@@ -23,6 +23,15 @@ define([], function() {
             // the user is logged in
             if (data) {
                 $(self.dom).find(".logout").show();
+                var userInfo = $(self.dom).find(".userInfo");
+                userInfo.find("[data-key]").each(function() {
+                    var infoElem = $(this);
+                    var key = infoElem.attr("data-key");
+                    if (key) {
+                        infoElem.text(data[key]);
+                    }
+                });
+                userInfo.show();
                 $(self.dom).find("#logoutButton").on("click", function() {
                     self.link("logout", function(err, data) {
                         window.location = config.loginPage;
