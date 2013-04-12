@@ -2,6 +2,10 @@ var crypto = require('crypto');
 
 exports.logout = function(link) {
 
+    // TODO shouldn't this be fixed in Mono?
+    // send no cache headers IE bug
+    link.res.headers["cache-control"] = "no-cache";
+
     M.session.get(link, function(link) {
 
         if (!link.session._uid) {
@@ -16,6 +20,9 @@ exports.logout = function(link) {
 };
 
 exports.userInfo = function(link) {
+
+    // send no cache headers IE bug
+    link.res.headers["cache-control"] = "no-cache";
 
     M.session.get(link, function(link) {
 
@@ -32,6 +39,9 @@ exports.userInfo = function(link) {
 };
 
 exports.login = function(link) {
+
+    // send no cache headers IE bug
+    link.res.headers["cache-control"] = "no-cache";
 
     if (link.session._uid) {
         link.send(400, 'You are already logged in');
