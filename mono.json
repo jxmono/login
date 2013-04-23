@@ -2,7 +2,10 @@
     "source": "bitbucket",
     "owner": "jillix",
     "name": "login",
-    "main": "main.js",
+    "dependencies": [
+        "/main.js",
+        "http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"
+    ],
     "operations": [
         { "file": "operations.js", "function": "login" },
         { "file": "operations.js", "function": "logout" },
