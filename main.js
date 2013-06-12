@@ -1,4 +1,3 @@
-
 var self;
 var form;
 var config;
@@ -57,7 +56,7 @@ module.exports = function init (conf) {
     });
 };
 
-function submitForm () {
+function submitForm() {
 
     // hide and empty the error message
     form.find(".alert").text("").hide();
@@ -80,7 +79,12 @@ function submitForm () {
     self.link("login", { data: data }, function(err, data) {
 
         if (err) {
-            form.find(".alert").text(err).fadeIn();
+            var alertElem = form.find(".alert");
+            if (alertElem.length) {
+                alertElem.text(err).fadeIn();
+            } else {
+                alert(err);
+            }
             return;
         }
 

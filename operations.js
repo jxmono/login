@@ -68,9 +68,6 @@ exports.login = function(link) {
         return link.send(400, error(errCode).message);
     }
 
-    // TODO do some transformation on the username
-    username = username.split("@")[0];
-
     getUser(link.params, username, password, function(err, user) {
 
         if (err) {
