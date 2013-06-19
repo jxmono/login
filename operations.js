@@ -28,7 +28,7 @@ exports.userInfo = function(link) {
 
         // we intentionally do not reply with a non-200 status
         // because we want to avoid the browser showing an error
-        if (!link.session._uid) {
+        if (link.session._rid == M.config.app.publicRole || !link.session._uid) {
             link.send(200);
             return;
         }
@@ -43,7 +43,7 @@ exports.login = function(link) {
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
-    if (link.session._uid) {
+    if (link.session._rid != M.config.app.publicRole && link.session._uid) {
         link.send(400, 'You are already logged in');
         return;
     }
