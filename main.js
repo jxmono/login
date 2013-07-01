@@ -34,6 +34,7 @@ module.exports = function init (conf) {
                 self.link("logout", function(err, data) {
                     window.location = config.loginPage;
                 });
+                return false;
             });
 
             return;
