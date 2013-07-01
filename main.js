@@ -20,8 +20,8 @@ module.exports = function init (conf) {
 
         // the user is logged in
         if (data) {
-            $(self.dom).find(".logout").show();
-            var userInfo = $(self.dom).find(".userInfo");
+            $(".logout", self.dom).show();
+            var userInfo = $(".userInfo", self.dom);
             userInfo.find("[data-key]").each(function() {
                 var infoElem = $(this);
                 var key = infoElem.attr("data-key");
@@ -30,7 +30,7 @@ module.exports = function init (conf) {
                 }
             });
             userInfo.show();
-            $(self.dom).find("#logoutButton").on("click", function() {
+            $("#logoutButton", self.dom).on("click", function() {
                 self.link("logout", function(err, data) {
                     window.location = config.loginPage;
                 });
@@ -46,10 +46,10 @@ module.exports = function init (conf) {
         }
 
         // the user is not logged in
-        $(self.dom).find(".login").show();
+        $(".login", self.dom).css("display", "block");
 
         // cache the form and add the submit handler
-        form = $(self.dom).find("form#login").first().show();
+        form = $("form#login", self.dom).first();
         form.submit(function() {
             submitForm();
             return false;
