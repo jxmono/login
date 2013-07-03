@@ -2,6 +2,9 @@ var self;
 var form;
 var config;
 
+var Bind = require("github/jillix/bind");
+var Events = require("github/jillix/events");
+
 module.exports = function init (conf) {
 
     self = this;
@@ -11,7 +14,12 @@ module.exports = function init (conf) {
     config.loginPage = config.loginPage || "/login";
     config.successPage = config.successPage || "/";
 
-    self.link("userInfo", function(err, data) {
+
+    self.getUserInfo = function (callback) {
+        self.link("userInfo", callback);
+    };
+
+    self.getUserInfo(function (err, data) {
 
         if (err) {
             alert(err);
@@ -55,6 +63,9 @@ module.exports = function init (conf) {
             return false;
         });
     });
+
+    self.emit("ready");
+    Events.call(self, config);
 };
 
 function submitForm() {
@@ -92,4 +103,3 @@ function submitForm() {
         window.location = config.successPage;
     });
 }
-
