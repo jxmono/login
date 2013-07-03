@@ -26,6 +26,7 @@ module.exports = function init (conf) {
             return;
         }
 
+        self.emit("userInfo", data);
         // the user is logged in
         if (data) {
             $(".logout", self.dom).show();
