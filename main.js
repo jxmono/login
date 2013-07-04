@@ -49,7 +49,7 @@ module.exports = function init (conf) {
             return;
         }
 
-        if (window.location.pathname !== config.loginPage) {
+        if (window.location.pathname !== config.loginPage && config.redirect) {
             window.location = config.loginPage;
             return;
         }
