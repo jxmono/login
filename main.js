@@ -26,20 +26,7 @@ module.exports = function init (conf) {
             return;
         }
 
-        if (config.options.waitFor) {
-            if (typeof config.options.waitFor === "string") {
-                config.options.waitFor = [config.options.waitFor];
-            }
-
-            for (var i in config.options.waitFor) {
-                self.onready(config.options.waitFor[i], function() {
-                    self.emit("userInfo", data);
-                });
-            }
-        }
-        else {
-            self.emit("userInfo", data);
-        }
+        self.emit("userInfo", data);
 
         // the user is logged in
         if (data) {
