@@ -13,7 +13,7 @@ module.exports = function init (conf) {
     // TODO process options as function
     config.loginPage = config.loginPage || "/login";
     config.successPage = config.successPage || "/";
-
+    config.options = config.options || {};
 
     self.getUserInfo = function (callback) {
         self.link("userInfo", callback);
@@ -26,7 +26,21 @@ module.exports = function init (conf) {
             return;
         }
 
-        self.emit("userInfo", data);
+        if (config.options.waitFor) {
+            if (typeof config.options.waitFor === "string") {
+                config.options.waitFor = [config.options.waitFor];
+            }
+
+            for (var i in config.options.waitFor) {
+                self.onready(config.options.waitFor[i], function() {
+                    self.emit("userInfo", data);
+                });
+            }
+        }
+        else {
+            self.emit("userInfo", data);
+        }
+
         // the user is logged in
         if (data) {
             $(".logout", self.dom).show();
