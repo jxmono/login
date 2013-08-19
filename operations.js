@@ -60,6 +60,7 @@ exports.login = function(link) {
     // TODO validate inputs: strings and trim
     var username = data.username;
     var password = data.password;
+    var additionals = data.additionals;
     // TODO do something with this option
     var remember = data.remember;
 
@@ -88,9 +89,13 @@ exports.login = function(link) {
                 return;
             }
 
+            userInfo.data.additionals = additionals;
+            
             M.session.start(link, userInfo.rid, userInfo.uid, userInfo.locale, userInfo.data, function(err, session) {
                 link.send(200);
             });
+
+
         });
     });
 };
