@@ -1,4 +1,3 @@
-M.wrap('bitbucket/jillix/login/v0.2.4/main.js', function (require, module, exports) {
 var self;
 var form;
 var config;
@@ -115,5 +114,3 @@ function submitForm() {
         window.location = config.successPage;
     });
 }
-
-return module; });
