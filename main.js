@@ -1,3 +1,4 @@
+M.wrap('bitbucket/jillix/login/v0.2.4/main.js', function (require, module, exports) {
 var self;
 var form;
 var config;
@@ -81,11 +82,20 @@ function submitForm() {
         remember = checkbox.checked;
     }
 
+    //searches for additionals in the config and adds them to the data sent
+    var additionals = [];
+    if(config.session){
+        for(var key = 0; key < config.session.length; key++){
+            additionals[key] = form.find("input[name='" + config.session[key] + "']").val();
+        }
+    }
+
     // prepare the data for the operation
     var data = {
         username: form.find("input[name='username']").val(),
         password: form.find("input[name='password']").val(),
-        remember: remember
+        remember: remember,
+        additionals: additionals
     };
 
     // call the operation
@@ -104,3 +114,5 @@ function submitForm() {
         window.location = config.successPage;
     });
 }
+
+return module; });
