@@ -82,14 +82,14 @@ exports.login = function(link) {
             return;
         }
 
+        user.additionals = additionals;
+    
         getUserInfo(link, user, function(err, userInfo) {
 
             if (err) {
-                link.send(500, 'Could not determine user information');
+                link.send(403, err.message || err);
                 return;
             }
-
-            userInfo.data.additionals = additionals;
             
             M.session.start(link, userInfo.rid, userInfo.uid, userInfo.locale, userInfo.data, function(err, session) {
                 link.send(200);
