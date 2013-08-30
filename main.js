@@ -26,7 +26,7 @@ module.exports = function init (conf) {
             alert(err);
             return;
         }
-
+        self.userInfo = data;
         self.emit("userInfo", data);
 
         // the user is logged in
