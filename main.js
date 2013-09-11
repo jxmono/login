@@ -103,7 +103,7 @@ function submitForm() {
     self.link("login", { data: data }, function(err, data) {
 
         if (err) {
-            var alertElem = form.find(".notice");
+            var alertElem = form.find(".alert");
             
             if (alertElem.length) {
                 alertElem.text(err).fadeIn();
