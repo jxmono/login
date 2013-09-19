@@ -9,13 +9,8 @@ var Events = require("github/jillix/events");
 module.exports = function init (conf) {
 
     self = this;
-    config = conf;
 
-    // TODO process options as function
-    config.loginPage = config.loginPage || "/login";
-    config.successPage = config.successPage || "/";
-    config.options = config.options || {};
-    config.errorContainer = config.errorContainer || ".alert";
+    config = processConfig(conf);
 
     self.getUserInfo = function (callback) {
         self.link("userInfo", callback);
@@ -32,7 +27,7 @@ module.exports = function init (conf) {
 
         // the user is logged in
         if (data) {
-            $(".logout", self.dom).show();
+            $(config.ui.selectors.logout, self.dom).show();
             var userInfo = $(".userInfo", self.dom);
             userInfo.find("[data-key]").each(function() {
                 var infoElem = $(this);
@@ -58,7 +53,7 @@ module.exports = function init (conf) {
         }
 
         // the user is not logged in
-        $(".login", self.dom).css("display", "block");
+        $(config.ui.selectors.login, self.dom).css("display", "block");
 
         // cache the form and add the submit handler
         form = $("form#login", self.dom).first();
@@ -117,4 +112,19 @@ function submitForm() {
         window.location = config.successPage;
     });
 }
+
+function processConfig (config) {
+
+    config.options = config.options || {};
+    config.loginPage = config.loginPage || "/login";
+    config.successPage = config.successPage || "/";
+    config.ui = config.ui || {};
+    config.ui.selectors = config.ui.selectors || {};
+    config.ui.selectors.error = config.ui.selectors.error || ".alert";
+    config.ui.selectors.login = config.ui.selectors.login || ".login";
+    config.ui.selectors.logout = config.ui.selectors.logout || ".logout";
+
+    return config;
+}
+
 return module; });
