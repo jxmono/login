@@ -15,6 +15,7 @@ module.exports = function init (conf) {
     config.loginPage = config.loginPage || "/login";
     config.successPage = config.successPage || "/";
     config.options = config.options || {};
+    config.errorContainer = config.errorContainer || ".alert";
 
     self.getUserInfo = function (callback) {
         self.link("userInfo", callback);
@@ -74,7 +75,7 @@ module.exports = function init (conf) {
 function submitForm() {
 
     // hide and empty the error message
-    form.find(".alert").text("").hide();
+    form.find(config.errorContainer).text("").hide();
 
     // does the user want to be remembered
     var remember = false;
@@ -103,7 +104,7 @@ function submitForm() {
     self.link("login", { data: data }, function(err, data) {
 
         if (err) {
-            var alertElem = form.find(".alert");
+            var alertElem = form.find(config.errorContainer);
             
             if (alertElem.length) {
                 alertElem.text(err).fadeIn();
