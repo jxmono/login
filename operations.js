@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var locale = {};
 
 exports.logout = function(link) {
 
@@ -20,7 +21,7 @@ exports.logout = function(link) {
 };
 
 exports.userInfo = function(link) {
-
+    
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
@@ -32,14 +33,14 @@ exports.userInfo = function(link) {
             link.send(200);
             return;
         }
-
+        
         // TODO remove critical or unnecessary data from the session
         link.send(200, link.session);
     });
 };
 
 exports.login = function(link) {
-
+    
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
@@ -66,7 +67,7 @@ exports.login = function(link) {
 
     if (!username || !password) {
         var errCode = username ? ERROR_MISSING_PASSWORD : ERROR_MISSING_USERNAME;
-        return link.send(400, error(errCode).message);
+        return link.send(400, error(errCode, link).message);
     }
 
     getUser(link.params, username, password, function(err, user) {
@@ -97,7 +98,7 @@ exports.login = function(link) {
 
 
         });
-    });
+    }, link);
 };
 
 function getUserInfo(link, user, callback) {
@@ -161,7 +162,7 @@ function api_customCode(handler, callback) {
 }
 
 
-function getUser(params, username, password, callback) {
+function getUser(params, username, password, callback, link) {
 
     if (!params) {
         return callback(new Error("Missing operation parameters"));
@@ -204,7 +205,7 @@ function getUser(params, username, password, callback) {
                     if (err) { return callback(err); }
 
                     if (!user) {
-                        return callback(error(ERROR_USER_OR_PASS_NOT_VALID));
+                        return callback(error(ERROR_USER_OR_PASS_NOT_VALID, link));
                     }
 
                     callback(null, user);
@@ -214,8 +215,9 @@ function getUser(params, username, password, callback) {
     });
 }
 
-function error(code) {
-    var message = ERRORS[code];
+function error(code, link) {
+    
+    var message = ERRORS[code][link.session._loc];
     var err = null;
     if (message) {
         err = new Error(message);
@@ -232,8 +234,20 @@ var ERROR_MISSING_USERNAME = 102;
 var ERROR_MISSING_PASSWORD = 103;
 
 var ERRORS = {
-    "101": "User or password not valid",
-    "102": "Missing username",
-    "103": "Missing password"
+    "101": {
+        "de": "Benutzername oder Passwort ungültig.",
+        "fr": "Nom d'utilisateur ou mot de passe invalide.",
+        "it": "Nome utente o password non validi."
+    },
+    "102": {
+        "de": "?Missing username?",
+        "fr": "?Missing username?",
+        "it": "?Missing username?"
+    },
+    "103": {
+        "de": "?Missing password?",
+        "fr": "?Missing password?",
+        "it": "?Missing password?"
+    }
 };
 
