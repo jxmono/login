@@ -70,7 +70,7 @@ module.exports = function init (conf) {
 function submitForm() {
 
     // hide and empty the error message
-    form.find(config.errorContainer).text("").hide();
+    form.find(config.ui.selectors.error).text("").hide();
 
     // does the user want to be remembered
     var remember = false;
@@ -99,7 +99,7 @@ function submitForm() {
     self.link("login", { data: data }, function(err, data) {
 
         if (err) {
-            var alertElem = form.find(config.errorContainer);
+            var alertElem = form.find(config.ui.selectors.error);
             
             if (alertElem.length) {
                 alertElem.text(err).fadeIn();
