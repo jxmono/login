@@ -1,6 +1,3 @@
-# This module was moved [here](https://github.com/jillix/login)
-
-
 login
 =====
 
