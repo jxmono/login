@@ -61,9 +61,10 @@ exports.login = function(link) {
     // TODO validate inputs: strings and trim
     var username = data.username;
     var password = data.password;
-    var additionals = data.additionals;
     // TODO do something with this option
     var remember = data.remember;
+    // TODO needs refactoring
+    var additionals = data.additionals;
 
     if (!username || !password) {
         var errCode = username ? ERROR_MISSING_PASSWORD : ERROR_MISSING_USERNAME;
@@ -85,7 +86,7 @@ exports.login = function(link) {
 
         user.additionals = additionals;
     
-        getUserInfo(link, user, function(err, userInfo) {
+        getUserInfo(user, link.session, function(err, userInfo) {
 
             if (err) {
                 link.send(403, err.message || err);
