@@ -1,5 +1,5 @@
 {
-    "source": "bitbucket",
+    "source": "github",
     "owner": "jillix",
     "name": "login",
     "dependencies": [
