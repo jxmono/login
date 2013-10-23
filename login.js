@@ -1,5 +1,3 @@
-M.wrap('bitbucket/jillix/login/dev/main.js', function (require, module, exports) {
-
 var Bind = require("github/jillix/bind");
 var Events = require("github/jillix/events");
 
@@ -134,4 +132,3 @@ function processConfig (config) {
     return config;
 }
 
-return module; });
