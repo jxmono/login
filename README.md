@@ -66,7 +66,7 @@ and it must return through the `callback` a user information object (if no error
 
 - Add new fixed and features here
 
-### v0.7.0
+### v0.1.0
 
 - Renamed the main file to the name of the module
 - Added Events `v0.1.7` dependency
