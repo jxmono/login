@@ -61,10 +61,15 @@ and it must return through the `callback` a user information object (if no error
 
 ### dev
 
-- Add new fixed and features here
+- Add new features here
+
+### v0.1.1
+
+- Fixed `getUserInfo` api from v0.1.0
 
 ### v0.1.0
 
+- **WARNING** This version has a bug in it DO NOT USE!!
 - Renamed the main file to the name of the module
 - Added Events `v0.1.7` dependency
 - Added skeleton documentation
