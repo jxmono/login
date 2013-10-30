@@ -86,7 +86,7 @@ exports.login = function(link) {
 
         user.additionals = additionals;
     
-        getUserInfo(user, link.session, function(err, userInfo) {
+        getUserInfo(link, user, function(err, userInfo) {
 
             if (err) {
                 link.send(403, err.message || err);
@@ -115,7 +115,7 @@ function getUserInfo(link, user, callback) {
 
         if (err) { return callback('Could not find the userInfo handler') }
 
-        foo(link, user, callback);
+        foo(user, link.session, callback);
     });
 }
 
