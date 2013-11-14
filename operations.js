@@ -241,14 +241,14 @@ var ERRORS = {
         "it": "Nome utente o password non validi."
     },
     "102": {
-        "de": "?Missing username?",
-        "fr": "?Missing username?",
-        "it": "?Missing username?"
+        "de": "Fehlender Benutzername!",
+        "fr": "Nom d'utilisateur manquant!",
+        "it": "Nome utente mancante"
     },
     "103": {
-        "de": "?Missing password?",
-        "fr": "?Missing password?",
-        "it": "?Missing password?"
+        "de": "Fehlendes Passwort!",
+        "fr": "Mot de passe manquant!",
+        "it": "Password mancante"
     }
 };
 
