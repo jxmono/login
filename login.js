@@ -2,7 +2,7 @@ var Bind = require("github/jillix/bind");
 var Events = require("github/jillix/events");
 
 module.exports = function init (conf) {
-
+    
     var self;
     var form;
     var config;
@@ -99,15 +99,23 @@ function submitForm(form) {
     };
 
     // call the operation
-    self.link("login", { data: data }, function(err, data) {
+    self.link("login", { data: data }, function(error, data) {
 
-        if (err) {
+        if (error) {
             var alertElem = form.find(self.config.ui.selectors.error);
-
+            var errMsg;
+            
+            self.emit("message", error, function (err, res) {
+                if (err) { return; }
+                errMsg = res.message;
+            });
+            
+            errMsg = errMsg || error;
+            
             if (alertElem.length) {
-                alertElem.text(err).fadeIn();
+                alertElem.text(errMsg).fadeIn();
             } else {
-                alert(err);
+                alert(errMsg);
             }
             return;
         }

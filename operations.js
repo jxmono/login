@@ -67,19 +67,13 @@ exports.login = function(link) {
     var additionals = data.additionals;
 
     if (!username || !password) {
-        var errCode = username ? ERROR_MISSING_PASSWORD : ERROR_MISSING_USERNAME;
-        return link.send(400, error(errCode, link).message);
+        var errMsg = username ? "ERROR_MISSING_PASSWORD" : "ERROR_MISSING_USERNAME";
+        return link.send(400, errMsg);
     }
 
     getUser(link.params, username, password, function(err, user) {
 
         if (err) {
-            if (err.code) {
-                onError(link, err, function(err) {
-                    link.send(403, err.toString());
-                });
-                return;
-            }
             link.send(400, err);
             return;
         }
@@ -206,7 +200,7 @@ function getUser(params, username, password, callback, link) {
                     if (err) { return callback(err); }
 
                     if (!user) {
-                        return callback(error(ERROR_USER_OR_PASS_NOT_VALID, link));
+                        return callback("ERROR_USER_OR_PASS_NOT_VALID", link);
                     }
 
                     callback(null, user);
@@ -215,40 +209,3 @@ function getUser(params, username, password, callback, link) {
         });
     });
 }
-
-function error(code, link) {
-    
-    var message = ERRORS[code][link.session._loc];
-    var err = null;
-    if (message) {
-        err = new Error(message);
-        err.code = code;
-    } else {
-        err = new Error("Unknown error");
-        err.code = 1;
-    }
-    return err;
-}
-
-var ERROR_USER_OR_PASS_NOT_VALID = 101;
-var ERROR_MISSING_USERNAME = 102;
-var ERROR_MISSING_PASSWORD = 103;
-
-var ERRORS = {
-    "101": {
-        "de": "Benutzername oder Passwort ungültig.",
-        "fr": "Nom d'utilisateur ou mot de passe invalide.",
-        "it": "Nome utente o password non validi."
-    },
-    "102": {
-        "de": "Fehlender Benutzername!",
-        "fr": "Nom d'utilisateur manquant!",
-        "it": "Nome utente mancante"
-    },
-    "103": {
-        "de": "Fehlendes Passwort!",
-        "fr": "Mot de passe manquant!",
-        "it": "Password mancante"
-    }
-};
-
