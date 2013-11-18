@@ -103,20 +103,20 @@ function submitForm(form) {
 
         if (error) {
             var alertElem = form.find(self.config.ui.selectors.error);
-            var errMsg;
             
             self.emit("message", error, function (err, res) {
+                
                 if (err) { return; }
-                errMsg = res.message;
+                
+                var errMsg = res.message || error;
+            
+                if (alertElem.length) {
+                    alertElem.text(errMsg).fadeIn();
+                } else {
+                    alert(errMsg);
+                }
             });
             
-            errMsg = errMsg || error;
-            
-            if (alertElem.length) {
-                alertElem.text(errMsg).fadeIn();
-            } else {
-                alert(errMsg);
-            }
             return;
         }
 
