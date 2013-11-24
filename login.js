@@ -2,7 +2,7 @@ var Bind = require("github/jillix/bind");
 var Events = require("github/jillix/events");
 
 module.exports = function init (conf) {
-    
+
     var self;
     var form;
     var config;
@@ -27,7 +27,11 @@ module.exports = function init (conf) {
 
         // the user is logged in
         if (data) {
+
+            // show logout and hide login elements
             $(self.config.ui.selectors.logout, self.dom).show();
+            $(self.config.ui.selectors.login, self.dom).hide();
+
             var userInfo = $(".userInfo", self.dom);
             userInfo.find("[data-key]").each(function() {
                 var infoElem = $(this);
@@ -53,7 +57,8 @@ module.exports = function init (conf) {
         }
 
         // the user is not logged in
-        $(self.config.ui.selectors.login, self.dom).css("display", "block");
+        $(self.config.ui.selectors.login, self.dom).show();
+        $(self.config.ui.selectors.logout, self.dom).hide();
 
         // cache the form and add the submit handler
         form = $("form#login", self.dom).first();
@@ -103,20 +108,20 @@ function submitForm(form) {
 
         if (error) {
             var alertElem = form.find(self.config.ui.selectors.error);
-            
+
             self.emit("message", error, function (err, res) {
-                
+
                 if (err) { return; }
-                
+
                 var errMsg = res.message || error;
-            
+
                 if (alertElem.length) {
                     alertElem.text(errMsg).fadeIn();
                 } else {
                     alert(errMsg);
                 }
             });
-            
+
             return;
         }
 
@@ -139,4 +144,3 @@ function processConfig (config) {
 
     return config;
 }
-
