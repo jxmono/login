@@ -63,9 +63,18 @@ and it must return through the `callback` a user information object (if no error
 
 - Add new features here
 
+### v0.1.4
+ - Show and hide login and logout elements.
+
+### v0.1.3
+ - TODO
+
+### v0.1.2
+ - TODO
+
 ### v0.1.1
 
-- Fixed `getUserInfo` api from v0.1.0
+ - Fixed `getUserInfo` api from v0.1.0
 
 ### v0.1.0
 
