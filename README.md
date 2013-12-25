@@ -64,8 +64,11 @@ and it must return through the `callback` a user information object (if no error
 - Add new features here
 
 
-### v0.1.4
+### v0.1.5
  - `Events v0.1.8` and `Bind v0.2.1`
+
+### v0.1.4
+ - TODO
 
 ### v0.1.3
  - TODO
