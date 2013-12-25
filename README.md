@@ -57,11 +57,21 @@ and it must return through the `callback` a user information object (if no error
 ```
 
 
-## Change Log
+## Changelog
 
 ### dev
 
 - Add new features here
+
+
+### v0.1.4
+ - `Events v0.1.8` and `Bind v0.2.1`
+
+### v0.1.3
+ - TODO
+
+### v0.1.2
+ - TODO
 
 ### v0.1.1
 
