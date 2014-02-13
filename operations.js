@@ -21,7 +21,7 @@ exports.logout = function(link) {
 };
 
 exports.userInfo = function(link) {
-    
+
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
@@ -33,14 +33,14 @@ exports.userInfo = function(link) {
             link.send(200);
             return;
         }
-        
+
         // TODO remove critical or unnecessary data from the session
         link.send(200, link.session);
     });
 };
 
 exports.login = function(link) {
-    
+
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
@@ -79,14 +79,14 @@ exports.login = function(link) {
         }
 
         user.additionals = additionals;
-    
+
         getUserInfo(link, user, function(err, userInfo) {
 
             if (err) {
                 link.send(403, err.message || err);
                 return;
             }
-            
+
             M.session.start(link, userInfo.rid, userInfo.uid, userInfo.locale, userInfo.data, function(err, session) {
                 link.send(200);
             });
@@ -194,6 +194,39 @@ function getUser(params, username, password, callback, link) {
                 var filter = {};
                 filter[params.userkey] = username;
                 filter[params.passkey] = password;
+
+                // a custom query path was provided
+                if (typeof params.customQuery === "string") {
+
+                    try {
+                        // call the function
+                        require(M.app.getPath() + "/" + modulePath)(link, params, filter, function (err, data) {
+
+                            // handle error
+                            if (err) { return callback(err); }
+
+                            // find one
+                            collection.findOne(filter, function(err, user) {
+
+                                // handle error
+                                if (err) { return callback(err); }
+
+                                // no user
+                                if (!user) {
+                                    return callback("ERROR_USER_OR_PASS_NOT_VALID", link);
+                                }
+
+                                // user found
+                                callback(null, user);
+                            });
+                        });
+                    } catch (e) {
+
+                        // exception
+                        callback(e.message);
+                    }
+                    return;
+                }
 
                 collection.findOne(filter, function(err, user) {
 
