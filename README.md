@@ -62,6 +62,7 @@ and it must return through the `callback` a user information object (if no error
 ### dev
 
 - Add new features here
+- Custom querys
 
 
 ### v0.1.5
