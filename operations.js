@@ -200,7 +200,7 @@ function getUser(params, username, password, callback, link) {
 
                     try {
                         // call the function
-                        require(M.app.getPath() + "/" + modulePath)(link, params, filter, function (err, data) {
+                        require(M.app.getPath() + params.customQuery)(link, params, filter, function (err, data) {
 
                             // handle error
                             if (err) { return callback(err); }
