@@ -65,6 +65,41 @@ and it must return through the `callback` a user information object (if no error
 - Custom querys
 
 
+### v0.1.6
+ - Added custom query feature that can be used when searching user in database. For this you have to provide `customQuery` parameter in the `params` object:
+    ```json
+    {
+        "ds":           "loginsDS",
+        "hash":         "...",
+        "userkey":      "..",
+        "passkey":      "...",
+        "customQuery":  "/login_custom_query",
+        "on":           {...}
+    }
+    ```
+    In the application directory you have to create `login_custom_query.js` that will export a function:
+
+    ```js
+    /*
+     *  This function is called from the login module.
+     *
+     * */
+    module.exports = function (link, params, filter, callback) {
+
+        filter["add any field"] =  "you want";
+
+        // do a database request, for example
+        foo (function (err) {
+
+            // handle error
+            if (err) return callback (err);
+
+            // finally callback
+            callback();
+        });
+    };
+    ```
+
 ### v0.1.5
  - `Events v0.1.8` and `Bind v0.2.1`
 
