@@ -60,9 +60,37 @@ and it must return through the `callback` a user information object (if no error
 ## Changelog
 
 ### dev
+ - Add new features here
 
-- Add new features here
+### v0.1.7
+ - Handle `successPage` in object format. The `successPage` can look like:
 
+    ```json
+    {
+        "scripts": ["/js/some-custom-script.js"],
+        ...,
+        "successPage": {
+            "type": "function",
+            "value": "Foo.login.computeSuccessPage"
+        }
+    }
+    ```
+
+    In the custom script (`some-custom-script.js`) that defines `Foo.login.computeSuccessPage` we will have:
+
+    ```js
+    window.Foo = {
+        login: {
+            computeSuccessPage: function (options, callback) {
+                var redirectUrl = "...";
+                doSomeCrudRequest(..., function (err, data) {
+                    if (err) { alert(err); }
+                    callback(redirectUrl);
+                });
+            }
+        }
+    };
+    ```
 
 ### v0.1.6
  - Added custom query feature that can be used when searching user in database. For this you have to provide `customQuery` parameter in the `params` object:
