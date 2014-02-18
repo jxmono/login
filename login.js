@@ -1,6 +1,33 @@
 var Bind = require("github/jillix/bind");
 var Events = require("github/jillix/events");
 
+/*
+ *  e.g. findValue({
+ *      a: {
+ *          b: {
+ *              c: 10
+ *          }
+ *      }
+ *  }, "a.b.c") === 10 // true
+ *
+ * */
+function findValue (parent, dotNot) {
+
+    if (!dotNot) return undefined;
+    if (!parent) return undefined;
+
+    var splits = dotNot.split(".");
+    var value;
+
+    for (var i = 0; i < splits.length; i++) {
+        value = parent[splits[i]];
+        if (value === undefined) return undefined;
+        if (typeof value === "object") parent = value;
+    }
+
+    return value;
+}
+
 module.exports = function init (conf) {
 
     var self;
@@ -125,7 +152,68 @@ function submitForm(form) {
             return;
         }
 
-        window.location = self.config.successPage;
+        // get the success page
+        var successPage = self.config.successPage;
+
+        // compute its constructor
+        switch (successPage.constructor) {
+
+            // success page is a string
+            case String:
+                // redirect
+                window.location = successPage;
+                break;
+
+            // success page is an object
+            case Object:
+
+                // compute type
+                switch (successPage.type) {
+
+                    // "function" type
+                    case "function":
+
+                        // get the function
+                        var functionToCall = findValue(window, successPage.value)
+
+                        // does the function exist?
+                        if (typeof functionToCall === "function") {
+
+                            // call the function
+                            functionToCall.call(self, {
+                                data: data
+                            }, function (redirectSuccessPage) {
+
+                                // error must be handled in the custom script
+                                window.location = redirectSuccessPage;
+                            }
+                        } else {
+
+                            // error
+                            console.error("Function " + successPage.value + "not found.");
+                        }
+                        break;
+
+                    // we also accept string value
+                    case "string":
+
+                        // if value is a string
+                        if (typeof successPage.value === "string") {
+
+                            // redirect
+                            window.location = successPage.value;
+                        } else {
+
+                            // show error
+                            console.error("The value of successPage object must be a string");
+                        }
+                        break;
+                }
+                break;
+            default:
+                console.error("Not a valid successPage value. It must be a string or an object containing the type and the value.");
+                break;
+        }
     });
 }
 
