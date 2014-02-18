@@ -62,6 +62,9 @@ and it must return through the `callback` a user information object (if no error
 ### dev
  - Add new features here
 
+### v0.1.8
+ - Send user info data after login.
+
 ### v0.1.7
  - Handle `successPage` in object format. The `successPage` can look like:
 
