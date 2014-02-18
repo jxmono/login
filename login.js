@@ -186,7 +186,7 @@ function submitForm(form) {
 
                                 // error must be handled in the custom script
                                 window.location = redirectSuccessPage;
-                            }
+                            });
                         } else {
 
                             // error
