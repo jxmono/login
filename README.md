@@ -62,6 +62,9 @@ and it must return through the `callback` a user information object (if no error
 ### dev
  - Add new features here
 
+### v0.1.9
+ - Added `readyOnUserInfo` field in `config.options`. If this is `true` the `ready` event will be emitted after the login module gets the user info.
+
 ### v0.1.8
  - Send user info data after login.
 

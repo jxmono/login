@@ -52,6 +52,11 @@ module.exports = function init (conf) {
         self.userInfo = data;
         self.emit("userInfo", data);
 
+        // if this is true, emit ready now
+        if (conf.options.readyOnUserInfo) {
+            self.emit("ready");
+        }
+
         // the user is logged in
         if (data) {
 
@@ -96,7 +101,12 @@ module.exports = function init (conf) {
         });
     });
 
-    self.emit("ready");
+    // if this is true, don't emit ready now
+    if (!conf.options.readyOnUserInfo) {
+        self.emit("ready");
+    }
+
+    // call events
     Events.call(self, self.config);
 };
 
