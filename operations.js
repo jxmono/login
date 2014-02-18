@@ -44,54 +44,70 @@ exports.login = function(link) {
     // send no cache headers IE bug
     link.res.headers["cache-control"] = "no-cache";
 
+    // already logged in
     if (link.session._rid != M.config.app.publicRole && link.session._uid) {
         link.send(400, 'You are already logged in');
         return;
     }
 
+    // get link data
     var data = link.data;
+
+    // link data is missing
     if (!data) {
         link.send(400, 'Missing login data');
         return;
     }
 
+    // set params
     link.params = link.params || {};
     link.params.on = link.params.on || {};
 
     // TODO validate inputs: strings and trim
     var username = data.username;
     var password = data.password;
+
     // TODO do something with this option
     var remember = data.remember;
+
     // TODO needs refactoring
     var additionals = data.additionals;
 
+    // user or password not provided
     if (!username || !password) {
+
+        // send error message
         var errMsg = username ? "ERROR_MISSING_PASSWORD" : "ERROR_MISSING_USERNAME";
         return link.send(400, errMsg);
     }
 
+    // get user
     getUser(link.params, username, password, function(err, user) {
 
+        // handle error
         if (err) {
             link.send(400, err);
             return;
         }
 
+        // set user additionals
         user.additionals = additionals;
 
+        // get user info
         getUserInfo(link, user, function(err, userInfo) {
 
+            // handle error
             if (err) {
                 link.send(403, err.message || err);
                 return;
             }
 
+            // start session
             M.session.start(link, userInfo.rid, userInfo.uid, userInfo.locale, userInfo.data, function(err, session) {
-                link.send(200);
+
+                // send user info data
+                link.send(200, userInfo.data);
             });
-
-
         });
     }, link);
 };
