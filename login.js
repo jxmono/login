@@ -1,23 +1,36 @@
-var Bind = require("github/jillix/bind");
-var Events = require("github/jillix/events");
+// bind and events dependencies
+var Bind = require("github/jillix/bind")
+  , Events = require("github/jillix/events")
+  ;
 
-/*
- *  e.g. findValue({
- *      a: {
- *          b: {
- *              c: 10
- *          }
- *      }
- *  }, "a.b.c") === 10 // true
+/**
+ * private: findValue
+ *  This function searches a value in an object.
+ *
+ *  Arguments
+ *    @parent: an object
+ *    @dotNot: string
+ *
+ *  Returns
+ *    The value that was found in the object or undefined.
+ *
+ *  Example
+ *    findValue({
+ *        a: {
+ *            b: {
+ *                c: 10
+ *            }
+ *        }
+ *    }, "a.b.c") === 10 // true
  *
  * */
 function findValue (parent, dotNot) {
 
-    if (!dotNot) return undefined;
-    if (!parent) return undefined;
+    if (!dotNot || !parent) return undefined;
 
-    var splits = dotNot.split(".");
-    var value;
+    var splits = String(dotNot).split(".")
+      , value
+      ;
 
     for (var i = 0; i < splits.length; i++) {
         value = parent[splits[i]];
@@ -28,28 +41,49 @@ function findValue (parent, dotNot) {
     return value;
 }
 
+/**
+ *
+ *  Login
+ *  A generic login module for Mono.
+ *
+ * */
 module.exports = function init (conf) {
 
-    var self;
-    var form;
-    var config;
+    // set self and compute config
+    var self = this
+      , config = self.config = processConfig.call(self, conf)
+      , $logout = $(self.config.ui.selectors.logout, self.dom)
+      , $login = $(self.config.ui.selectors.login, self.dom)
+      ;
 
-    self = this;
+    // hide login and logout elements
+    $logout.hide();
+    $login.hide();
 
-    config = processConfig.call(self, conf);
-    self.config = config;
-
+    /**
+     *
+     *  login#getUserInfo
+     *
+     *  This function returns the user information from session
+     *
+     * */
     self.getUserInfo = function (callback) {
         self.link("userInfo", callback);
     };
 
+    // call get user info
     self.getUserInfo(function (err, data) {
 
+        // handle error
         if (err) {
             alert(err);
             return;
         }
+
+        // set user info
         self.userInfo = data;
+
+        // emit event
         self.emit("userInfo", data);
 
         // if this is true, emit ready now
@@ -61,42 +95,64 @@ module.exports = function init (conf) {
         if (data) {
 
             // show logout and hide login elements
-            $(self.config.ui.selectors.logout, self.dom).show();
-            $(self.config.ui.selectors.login, self.dom).hide();
+            $logout.show();
+            $login.hide();
 
-            var userInfo = $(".userInfo", self.dom);
-            userInfo.find("[data-key]").each(function() {
-                var infoElem = $(this);
-                var key = infoElem.attr("data-key");
+            // get user info elements
+            var $userInfo = $(".userInfo", self.dom);
+
+            // each element with data-key attribute
+            $userInfo.find("[data-key]").each(function() {
+
+                // the current element
+                var $infoElem = $(this)
+
+                    // get data-key attribute
+                  , key = $infoElem.attr("data-key")
+                  ;
+
+                // the key exists
                 if (key) {
-                    infoElem.text(data[key]);
+
+                    // find the value in data and set the text
+                    $infoElem.text(findValue(data, key));
                 }
             });
-            userInfo.show();
+
+            // show user info
+            $userInfo.show();
+
+            // logout button click handler
             $("#logoutButton", self.dom).on("click", function() {
+
+                // call logout operation
                 self.link("logout", function(err, data) {
+
+                    // redirect
                     window.location = self.config.loginPage;
                 });
+
+                // prevent default browser behavior
                 return false;
             });
 
             return;
         }
 
+        // redirect to login page
         if (window.location.pathname !== self.config.loginPage && self.config.redirect) {
             window.location = self.config.loginPage;
             return;
         }
 
         // the user is not logged in
-        $(self.config.ui.selectors.login, self.dom).show();
-        $(self.config.ui.selectors.logout, self.dom).hide();
+        $login.show();
+        $logout.hide();
 
         // cache the form and add the submit handler
-        form = $("form#login", self.dom).first();
-        form.submit(function(e) {
+        $("form#login", self.dom).first().submit(function(e) {
             e.preventDefault();
-            submitForm.call(self, form);
+            submitForm.call(self, $(this));
             return false;
         });
     });
@@ -110,50 +166,82 @@ module.exports = function init (conf) {
     Events.call(self, self.config);
 };
 
+/**
+ *
+ * private: submitForm
+ *  This function submits the login form
+ *
+ *  Arguments
+ *    @form: the form jQuery object
+ *
+ * */
 function submitForm(form) {
 
-    var self = this;
+    // get self
+    var self = this
+
+        // jQuery wrap
+      , $form = $(form)
+      ;
 
     // hide and empty the error message
-    form.find(self.config.ui.selectors.error).text("").hide();
+    $form.find(self.config.ui.selectors.error).text("").hide();
 
     // does the user want to be remembered
-    var remember = false;
-    var checkbox = form.find("input[name='remember']").get(0);
+    var remember = false
+      , checkbox = form.find("input[name='remember']").get(0)
+      ;
+
+    // checkbox exits
     if (checkbox) {
+
+        // set remember value
         remember = checkbox.checked;
     }
 
     //searches for additionals in the config and adds them to the data sent
     var additionals = [];
-    if(self.config.session){
-        for(var key = 0; key < self.config.session.length; key++){
+
+    // if config.session exists
+    if (self.config.session) {
+
+        // each key
+        for(var key = 0; key < self.config.session.length; ++key){
+
+            // set aditionals
             additionals[key] = form.find("input[name='" + self.config.session[key] + "']").val();
         }
     }
 
     // prepare the data for the operation
     var data = {
-        username: form.find("input[name='username']").val(),
-        password: form.find("input[name='password']").val(),
-        remember: remember,
-        additionals: additionals
+        username: $form.find("input[name='username']").val()
+      , password: $form.find("input[name='password']").val()
+      , remember: remember
+      , additionals: additionals
     };
 
     // call the operation
     self.link("login", { data: data }, function(error, data) {
 
+        // handle error
         if (error) {
-            var alertElem = form.find(self.config.ui.selectors.error);
 
+            // get alert jQuery element
+            var $alertElem = $form.find(self.config.ui.selectors.error);
+
+            // translate error
             self.emit("message", error, function (err, res) {
 
+                // handle error
                 if (err) { return; }
 
+                // set error
                 var errMsg = res.message || error;
 
-                if (alertElem.length) {
-                    alertElem.text(errMsg).fadeIn();
+                // alert element exists
+                if ($alertElem.length) {
+                    $alertElem.text(errMsg).fadeIn();
                 } else {
                     alert(errMsg);
                 }
@@ -227,10 +315,23 @@ function submitForm(form) {
     });
 }
 
+/**
+ *
+ * private: processConfig
+ *  This function sets the config defaults
+ *
+ *  Arguments
+ *    @config: the config object
+ *
+ *  Returns
+ *    config object
+ * */
 function processConfig (config) {
 
+    // get self
     var self = this;
 
+    // set defaults
     config.options = config.options || {};
     config.loginPage = config.loginPage || "/login";
     config.successPage = config.successPage || "/";
@@ -240,5 +341,6 @@ function processConfig (config) {
     config.ui.selectors.login = config.ui.selectors.login || ".login";
     config.ui.selectors.logout = config.ui.selectors.logout || ".logout";
 
+    // return
     return config;
 }
