@@ -64,7 +64,7 @@ exports.login = function(link) {
     link.params.on = link.params.on || {};
 
     // TODO validate inputs: strings and trim
-    var username = data.username;
+    var username = data.username.toLowerCase();
     var password = data.password;
 
     // TODO do something with this option
