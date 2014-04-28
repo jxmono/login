@@ -12,10 +12,11 @@ Starts a session for the given user if the user credentials are correct and the 
 
 #### Request data
 
+The module HTML must contain a `form#login` which will be used for data collection. The form must contain the following named inputs:
+
 - `username` the login user name
 - `password` the login password
-- `remember` **TODO** (currently remember is on since the session expires in several days only)
-- `additionals`: additional data can be sent from an extended login form (**TODO** code need improvement)
+- any additional names input will be submitted with the request and saved into the server side user object
 
 #### Response
 
@@ -25,12 +26,11 @@ Starts a session for the given user if the user credentials are correct and the 
 
 ### `logout`
 
-**TODO**
+Ends a session for the logged in user.
 
 ### `userInfo`
 
-**TODO**
-
+Gets the user session object or `undefined` if the user is not logged in.
 
 ## Custom Code
 
