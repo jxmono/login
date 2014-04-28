@@ -16,7 +16,7 @@ The module HTML must contain a `form#login` which will be used for data collecti
 
 - `username` the login user name
 - `password` the login password
-- any additional names input will be submitted with the request and saved into the server side user object
+- any additional named input will be submitted with the request and saved into the server side user object under the `additional` key
 
 #### Response
 
