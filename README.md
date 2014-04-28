@@ -62,6 +62,10 @@ and it must return through the `callback` a user information object (if no error
 ### dev
  - Add new features here
 
+### v0.1.11
+ - Sending all data from the client and save it in the user server object under `additionals` key
+ - `Events v0.1.10` and `Bind v0.2.2`
+
 ### v0.1.10
  - Hide login and logout elements matched by selectors on module init
  - Cleaned up the code
