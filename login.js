@@ -178,48 +178,35 @@ module.exports = function init (conf) {
 function submitForm(form) {
 
     // get self
-    var self = this
+    var self = this;
 
-        // jQuery wrap
-      , $form = $(form)
-      ;
+    // jQuery wrap
+    var $form = $(form);
 
     // hide and empty the error message
     $form.find(self.config.ui.selectors.error).text("").hide();
 
-    // does the user want to be remembered
-    var remember = false
-      , checkbox = form.find("input[name='remember']").get(0)
-      ;
+    var data = {};
 
-    // checkbox exits
-    if (checkbox) {
-
-        // set remember value
-        remember = checkbox.checked;
-    }
-
-    //searches for additionals in the config and adds them to the data sent
-    var additionals = [];
-
-    // if config.session exists
-    if (self.config.session) {
-
-        // each key
-        for(var key = 0; key < self.config.session.length; ++key){
-
-            // set aditionals
-            additionals[key] = form.find("input[name='" + self.config.session[key] + "']").val();
+    // gather all the data in the form
+    $form.find("input, textarea, select").each(function() {
+        var input = $(this);
+        switch (input.prop("tagName")) {
+            case "INPUT":
+            case "TEXTAREA":
+            case "SELECT":
+                if (input.attr("type") !== "checkbox") {
+                    data[input.attr("name")] = input.val().trim();
+                } else {
+                    data[input.attr("name")] = input.prop("checked");
+                }
         }
-    }
+    });
 
-    // prepare the data for the operation
-    var data = {
-        username: $form.find("input[name='username']").val()
-      , password: $form.find("input[name='password']").val()
-      , remember: remember
-      , additionals: additionals
-    };
+    // abandon submission if username or password is missing
+    if (!data.username || !data.password) {
+        return;
+    }
 
     // call the operation
     self.link("login", { data: data }, function(error, data) {

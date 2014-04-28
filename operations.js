@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+var crypto = require("crypto");
 var locale = {};
 
 exports.logout = function(link) {
@@ -10,7 +10,7 @@ exports.logout = function(link) {
     M.session.get(link, function(link) {
 
         if (!link.session._uid) {
-            link.send(400, 'You are not logged in');
+            link.send(400, "You are not logged in");
             return;
         }
 
@@ -46,7 +46,7 @@ exports.login = function(link) {
 
     // already logged in
     if (link.session._rid != M.config.app.publicRole && link.session._uid) {
-        link.send(400, 'You are already logged in');
+        link.send(400, "You are already logged in");
         return;
     }
 
@@ -55,7 +55,7 @@ exports.login = function(link) {
 
     // link data is missing
     if (!data) {
-        link.send(400, 'Missing login data');
+        link.send(400, "Missing login data");
         return;
     }
 
@@ -63,15 +63,11 @@ exports.login = function(link) {
     link.params = link.params || {};
     link.params.on = link.params.on || {};
 
-    // TODO validate inputs: strings and trim
-    var username = data.username.toLowerCase();
-    var password = data.password;
-
-    // TODO do something with this option
-    var remember = data.remember;
-
-    // TODO needs refactoring
-    var additionals = data.additionals;
+    var username = (data.username || "").trim();
+    delete data.username;
+    var password = (data.password || "").trim();
+    delete data.password;
+    var additionals = data;
 
     // user or password not provided
     if (!username || !password) {
@@ -118,12 +114,12 @@ function getUserInfo(link, user, callback) {
 
     // no userInfo handler specified
     if (!handler) {
-        return callback('You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
+        return callback("You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.");
     }
 
     api_customCode(handler, function(err, foo) {
 
-        if (err) { return callback('Could not find the userInfo handler') }
+        if (err) { return callback("Could not find the userInfo handler") }
 
         foo(user, link.session, callback);
     });
@@ -208,7 +204,7 @@ function getUser(params, username, password, callback, link) {
                 }
 
                 var filter = {};
-                filter[params.userkey] = username;
+                filter[params.userkey] = new RegExp("^" + username + "$", "i");
                 filter[params.passkey] = password;
 
                 // a custom query path was provided
