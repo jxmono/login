@@ -2,11 +2,92 @@ var crypto = require("crypto");
 var locale = {};
 
 exports.forgot = function(link) {
-    link.send(500, "Not implemented");
+
+    // get link data
+    var data = link.data;
+
+    // link data is missing
+    if (!data) {
+        link.send(400, "Missing forgot data");
+        return;
+    }
+
+    // set params
+    link.params = link.params || {};
+
+    var username = (data.username || "").trim();
+    delete data.username;
+
+    // send error message if user not provided
+    if (!username) {
+        return link.send(400, "ERROR_MISSING_USERNAME");
+    }
+
+    // get user
+    getUser(link.params, username, null, function(err, user) {
+
+        // handle error
+        if (err) {
+            link.send(400, err);
+            return;
+        }
+
+        // get user info
+        getUserInfo(link, user, function(err, userInfo) {
+
+            // handle error
+            if (err) {
+                link.send(403, err.message || err);
+                return;
+            }
+
+            // TODO generate a security token and add it to the user under the name link.params.tokenkey
+
+            // TODO send mandrill email. Send:
+            // - an email to userInfo[link.params.emailkey]
+            // - link to .../@/login/reset?username={username}&token={token}
+            // - the mandrill template slug must be read from the configuration
+            // - if the template slug configuration is an object, consider it i18n
+
+            // send user info data
+            link.send(200);
+        });
+    }, link);
 };
 
 exports.reset = function(link) {
-    link.send(500, "Not implemented");
+    // the reset form is requested
+    if (link.req.method === "GET") {
+        // TODO add a verification token to the URL and add it to the hidden input
+        link.res.setHeader('content-type', 'text/html');
+        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="TODO"></form>');
+        return;
+    }
+
+    // the reset form is submitted
+    if (link.req.method === "POST") {
+        var password = (link.data.password || "").trim();
+        var repassword = (link.data.repassword || "").trim();
+        var token = (link.data.token || "").trim();
+
+        if (!link.data.password) {
+            var message = "Missing password";
+        }
+        if (link.data.password !== link.data.repassword) {
+            var message = "Passwords do not match";
+        }
+
+        // TODO make some configurable regexp password policy
+
+        // TODO get the user and check if he has the password change security token
+
+        // TODO set the user password, delete the security token
+
+        link.send(200, "OK");
+        return;
+    }
+
+    link.send(400);
 };
 
 exports.logout = function(link) {
@@ -79,7 +160,6 @@ exports.login = function(link) {
 
     // user or password not provided
     if (!username || !password) {
-
         // send error message
         var errMsg = username ? "ERROR_MISSING_PASSWORD" : "ERROR_MISSING_USERNAME";
         return link.send(400, errMsg);
@@ -195,25 +275,27 @@ function getUser(params, username, password, callback, link) {
 
                 if (err) { return callback(err); }
 
-                // "md5-32/sha1-40/sha256-64/auto"
-                switch (params.hash) {
-                    case "md5":
-                    case "sha1":
-                    case "sha256":
-                    case "sha512":
-                        var hash = crypto.createHash(params.hash);
-                        hash.update(password);
-                        password = hash.digest("hex").toLowerCase();
-                        break;
-                    case "none":
-                        break;
-                    default:
-                        return callback(params.hash ? "Missing hash algorithm" : "Invalid hash algorithm");
-                }
-
                 var filter = {};
                 filter[params.userkey] = new RegExp("^" + username + "$", "i");
-                filter[params.passkey] = password;
+
+                if (password !== null) {
+                    // "md5-32/sha1-40/sha256-64/auto"
+                    switch (params.hash) {
+                        case "md5":
+                        case "sha1":
+                        case "sha256":
+                        case "sha512":
+                            var hash = crypto.createHash(params.hash);
+                            hash.update(password);
+                            password = hash.digest("hex").toLowerCase();
+                            break;
+                        case "none":
+                            break;
+                        default:
+                            return callback(params.hash ? "Missing hash algorithm" : "Invalid hash algorithm");
+                    }
+                    filter[params.passkey] = password;
+                }
 
                 // a custom query path was provided
                 if (typeof params.customQuery === "string") {
@@ -233,7 +315,7 @@ function getUser(params, username, password, callback, link) {
 
                                 // no user
                                 if (!user) {
-                                    return callback("ERROR_USER_OR_PASS_NOT_VALID", link);
+                                    return callback("ERROR_USER_OR_PASS_NOT_VALID");
                                 }
 
                                 // user found
@@ -253,7 +335,7 @@ function getUser(params, username, password, callback, link) {
                     if (err) { return callback(err); }
 
                     if (!user) {
-                        return callback("ERROR_USER_OR_PASS_NOT_VALID", link);
+                        return callback("ERROR_USER_OR_PASS_NOT_VALID");
                     }
 
                     callback(null, user);
