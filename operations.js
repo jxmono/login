@@ -1,6 +1,14 @@
 var crypto = require("crypto");
 var locale = {};
 
+exports.forgot = function(link) {
+    link.send(500, "Not implemented");
+};
+
+exports.reset = function(link) {
+    link.send(500, "Not implemented");
+};
+
 exports.logout = function(link) {
 
     // TODO shouldn't this be fixed in Mono?

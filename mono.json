@@ -11,6 +11,8 @@
     "operations": [
         { "file": "operations.js", "function": "login" },
         { "file": "operations.js", "function": "logout" },
-        { "file": "operations.js", "function": "userInfo" }
+        { "file": "operations.js", "function": "userInfo" },
+        { "file": "operations.js", "function": "forgot" },
+        { "file": "operations.js", "function": "reset" }
     ]
 }

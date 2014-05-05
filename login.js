@@ -28,14 +28,15 @@ function findValue (parent, dotNot) {
 
     if (!dotNot || !parent) return undefined;
 
-    var splits = String(dotNot).split(".")
-      , value
-      ;
+    var splits = String(dotNot).split(".");
+    var value;
 
     for (var i = 0; i < splits.length; i++) {
         value = parent[splits[i]];
-        if (value === undefined) return undefined;
-        if (typeof value === "object") parent = value;
+        if (value === undefined) { return undefined };
+        if (typeof value === "object") {
+            parent = value;
+        }
     }
 
     return value;
@@ -50,15 +51,18 @@ function findValue (parent, dotNot) {
 module.exports = function init (conf) {
 
     // set self and compute config
-    var self = this
-      , config = self.config = processConfig.call(self, conf)
-      , $logout = $(self.config.ui.selectors.logout, self.dom)
-      , $login = $(self.config.ui.selectors.login, self.dom)
-      ;
+    var self = this;
+    var config = self.config = processConfig.call(self, conf);
+    var $login = $(self.config.ui.selectors.login, self.dom);
+    var $logout = $(self.config.ui.selectors.logout, self.dom);
+    var $forgot = $(self.config.ui.selectors.forgot, self.dom);
 
-    // hide login and logout elements
-    $logout.hide();
+    // hide login, logout, and forgot elements
     $login.hide();
+    $logout.hide();
+    $forgot.hide();
+
+    $forgot.find(".forgot-link").attr("href", config.forgotPage);
 
     /**
      *
@@ -97,6 +101,7 @@ module.exports = function init (conf) {
             // show logout and hide login elements
             $logout.show();
             $login.hide();
+            $forgot.hide();
 
             // get user info elements
             var $userInfo = $(".userInfo", self.dom);
@@ -105,16 +110,12 @@ module.exports = function init (conf) {
             $userInfo.find("[data-key]").each(function() {
 
                 // the current element
-                var $infoElem = $(this)
+                var $infoElem = $(this);
+                // get data-key attribute
+                var key = $infoElem.attr("data-key");
 
-                    // get data-key attribute
-                  , key = $infoElem.attr("data-key")
-                  ;
-
-                // the key exists
+                // if the key exists find the value in data and set the text
                 if (key) {
-
-                    // find the value in data and set the text
                     $infoElem.text(findValue(data, key));
                 }
             });
@@ -125,10 +126,8 @@ module.exports = function init (conf) {
             // logout button click handler
             $("#logoutButton", self.dom).on("click", function() {
 
-                // call logout operation
+                // call logout operation and redirect to login
                 self.link("logout", function(err, data) {
-
-                    // redirect
                     window.location = self.config.loginPage;
                 });
 
@@ -140,17 +139,29 @@ module.exports = function init (conf) {
         }
 
         // redirect to login page
-        if (window.location.pathname !== self.config.loginPage && self.config.redirect) {
+        if (window.location.pathname !== self.config.loginPage && window.location.pathname !== self.config.forgotPage && self.config.redirect) {
             window.location = self.config.loginPage;
             return;
         }
 
         // the user is not logged in
-        $login.show();
+        if (window.location.pathname === self.config.forgotPage) {
+            $forgot.show();
+            $login.hide();
+        } else {
+            $login.show();
+            $forgot.hide();
+        }
         $logout.hide();
 
         // cache the form and add the submit handler
         $("form#login", self.dom).first().submit(function(e) {
+            e.preventDefault();
+            submitForm.call(self, $(this));
+            return false;
+        });
+        // cache the form and add the submit handler
+        $("form#forgot", self.dom).first().submit(function(e) {
             e.preventDefault();
             submitForm.call(self, $(this));
             return false;
@@ -203,13 +214,15 @@ function submitForm(form) {
         }
     });
 
+    var isForgot = $form.attr("id") === "forgot";
+
     // abandon submission if username or password is missing
-    if (!data.username || !data.password) {
+    if (!data.username || !isForgot && !data.password) {
         return;
     }
 
     // call the operation
-    self.link("login", { data: data }, function(error, data) {
+    self.link(isForgot ? "forgot" : "login", { data: data }, function(error, data) {
 
         // handle error
         if (error) {
@@ -246,7 +259,7 @@ function submitForm(form) {
             // success page is a string
             case String:
                 // redirect
-                window.location = successPage;
+                window.location = isForgot ? self.config.loginPage : self.config.successPage;
                 break;
 
             // success page is an object
@@ -322,11 +335,13 @@ function processConfig (config) {
     config.options = config.options || {};
     config.loginPage = config.loginPage || "/login";
     config.successPage = config.successPage || "/";
+    config.forgotPage = config.forgotPage || "/forgot";
     config.ui = config.ui || {};
     config.ui.selectors = config.ui.selectors || {};
     config.ui.selectors.error = config.ui.selectors.error || ".alert";
     config.ui.selectors.login = config.ui.selectors.login || ".login";
     config.ui.selectors.logout = config.ui.selectors.logout || ".logout";
+    config.ui.selectors.forgot = config.ui.selectors.forgot || ".forgot";
 
     // return
     return config;
