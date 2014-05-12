@@ -33,11 +33,10 @@ exports.forgot = function(link) {
             link.send(400, err);
             return;
         }
-        console.log(link);
+
         // generate the token
         var token = generateToken(10);
         var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
-
 
         // add the token to the user
         var updateObj = {
@@ -84,9 +83,17 @@ exports.forgot = function(link) {
 exports.reset = function(link) {
     // the reset form is requested
     if (link.req.method === "GET") {
-        // TODO add a verification token to the URL and add it to the hidden input
+
+        if (!link.query.token || !link.query.username) {
+            link.send(400, 'Bad link!');
+        }
+
+        // get the token and username
+        var token = link.query.token;   
+        var username = link.query.username;
+
         link.res.setHeader('content-type', 'text/html');
-        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="TODO"></form>');
+        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="' + token +'"><input name="username" type="hidden" value="' + username +'"></form>');
         return;
     }
 
@@ -95,6 +102,7 @@ exports.reset = function(link) {
         var password = (link.data.password || "").trim();
         var repassword = (link.data.repassword || "").trim();
         var token = (link.data.token || "").trim();
+        var username = (link.data.username || "").trim();
 
         if (!link.data.password) {
             var message = "Missing password";
@@ -105,15 +113,54 @@ exports.reset = function(link) {
 
         // TODO make some configurable regexp password policy
 
-        // TODO get the user and check if he has the password change security token
+        // get user
+        getUser(link.params, username, null, function(err, user, usersCol) {
 
-        // TODO set the user password, delete the security token
+            // handle error
+            if (err) {
+                link.send(400, err);
+                return;
+            }
 
-        link.send(200, "OK");
-        return;
+            // check to see if the token matches
+            if (user[link.params.tokenkey] !== token) {
+                link.send(400, "Token does not match");
+                return;
+            }
+
+            // change the password
+            var updateObj = {
+                $set: {
+                    pwd: password
+                }
+            };
+            usersCol.update({ _id: user._id}, updateObj, function (err) {
+
+                // handle error
+                if (err) {
+                    link.send(400, err);
+                    return;
+                }
+
+                // delete the security token
+                // change the password
+                var updateObj = {
+                    $unset: {}
+                }
+                updateObj.$unset[link.params.tokenkey] = "";
+                usersCol.update({ _id: user._id}, updateObj, function (err) {
+
+                    // handle error
+                    if (err) {
+                        link.send(400, err);
+                        return;
+                    }
+
+                    link.send(200, "OK");
+                });
+            });
+        });
     }
-
-    link.send(400);
 };
 
 exports.logout = function(link) {
