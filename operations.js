@@ -1,3 +1,5 @@
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill('D43S5u9IlGqY1wCE2qqrRg');
 var crypto = require("crypto");
 var locale = {};
 
@@ -24,33 +26,57 @@ exports.forgot = function(link) {
     }
 
     // get user
-    getUser(link.params, username, null, function(err, user) {
+    getUser(link.params, username, null, function(err, user, usersCol) {
 
         // handle error
         if (err) {
             link.send(400, err);
             return;
         }
+        console.log(link);
+        // generate the token
+        var token = generateToken(10);
+        var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
 
-        // get user info
-        getUserInfo(link, user, function(err, userInfo) {
+
+        // add the token to the user
+        var updateObj = {
+            $set : {}
+        }
+        updateObj.$set[link.params.tokenkey] = token;
+        usersCol.update({ '_id': user._id }, updateObj, function (err) {
 
             // handle error
             if (err) {
-                link.send(403, err.message || err);
+                link.send(400, err);
                 return;
             }
 
-            // TODO generate a security token and add it to the user under the name link.params.tokenkey
+            // create the mail data
+            var mailData = {
+                template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
+                receiver: username,
+                sender: link.params.sender,
+                mergeVars: [
+                    {
+                        name: 'recover_link',
+                        content: resetLink
+                    }
+                ]
+            }
 
-            // TODO send mandrill email. Send:
-            // - an email to userInfo[link.params.emailkey]
-            // - link to .../@/login/reset?username={username}&token={token}
-            // - the mandrill template slug must be read from the configuration
-            // - if the template slug configuration is an object, consider it i18n
+            // send mail
+            sendMail(mailData, function (err) {
 
-            // send user info data
-            link.send(200);
+                // handle error
+                if (err) {
+                    link.send(400, err);
+                    return;
+                }
+
+                // operation complete
+                link.send(200);
+            });
         });
     }, link);
 };
@@ -196,6 +222,56 @@ exports.login = function(link) {
     }, link);
 };
 
+function sendMail (data, callback) {
+
+    if (!callback) {
+        callback = function () {};
+    }
+
+    if (!data) {
+        callback('Missing data object!');
+        return;
+    }
+
+    var template = {
+        "template_name": data.template,
+        "template_content": [],
+        "message": {
+            "to": [{
+                "email": data.receiver,
+                "type": "to"
+            }],
+            "from_email": data.sender,
+            "from_name": 'Jillix Support Team',
+            "global_merge_vars": data.mergeVars
+        }
+    };
+
+    mandrill_client.messages.sendTemplate(template, function(result) {
+        //check to see if rejected
+        if (result[0].status === 'rejected' || result[0].status === 'invalid') {
+            callback(result[0].reject_reason || 'Error on sending email, check if the email provided is valid');
+        } else {
+            callback(null);
+        }
+    }, function(e) {
+        // Mandrill returns the error as an object with name and message keys
+        console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+        callback(e.name + ' - ' + e.message);
+    });
+}
+
+function generateToken(length) {
+    var token = '';
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    for (var i = 0; i < length; i++) {
+        token += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+
+    return token;
+}
+
 function getUserInfo(link, user, callback) {
 
     var handler = link.params.on.userInfo;
@@ -319,7 +395,7 @@ function getUser(params, username, password, callback, link) {
                                 }
 
                                 // user found
-                                callback(null, user);
+                                callback(null, user, collection);
                             });
                         });
                     } catch (e) {
@@ -338,7 +414,7 @@ function getUser(params, username, password, callback, link) {
                         return callback("ERROR_USER_OR_PASS_NOT_VALID");
                     }
 
-                    callback(null, user);
+                    callback(null, user, collection);
                 });
             });
         });
