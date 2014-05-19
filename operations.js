@@ -156,7 +156,12 @@ exports.reset = function(link) {
                         return;
                     }
 
-                    link.send(200, "OK");
+                    if (link.params.resetRedirect) {
+                        link.res.headers.location = "http://" + link.req.headers.host + link.params.resetRedirect;
+                        link.send(302);
+                    } else {
+                        link.send(200, "OK");
+                    }
                 });
             });
         });
