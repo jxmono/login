@@ -1,6 +1,6 @@
 var mandrill = require('mandrill-api/mandrill');
 var mandrill_client = new mandrill.Mandrill('D43S5u9IlGqY1wCE2qqrRg');
-var crypto = require("crypto");
+var crypto = require('crypto');
 var locale = {};
 
 exports.forgot = function(link) {
@@ -10,19 +10,19 @@ exports.forgot = function(link) {
 
     // link data is missing
     if (!data) {
-        link.send(400, "Missing forgot data");
+        link.send(400, 'Missing forgot data');
         return;
     }
 
     // set params
     link.params = link.params || {};
 
-    var username = (data.username || "").trim();
+    var username = (data.username || '').trim();
     delete data.username;
 
     // send error message if user not provided
     if (!username) {
-        return link.send(400, "ERROR_MISSING_USERNAME");
+        return link.send(400, 'ERROR_MISSING_USERNAME');
     }
 
     // get user
@@ -38,18 +38,16 @@ exports.forgot = function(link) {
         var token = generateToken(10);
         var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
 
-        // add the token to the user
         var updateObj = {
             $set : {}
         }
-        updateObj.$set[link.params.tokenkey] = token;
-        usersCol.update({ '_id': user._id }, updateObj, function (err) {
 
-            // handle error
-            if (err) {
-                link.send(400, err);
-                return;
-            }
+        // add the token to the user
+        updateObj.$set[link.params.tokenkey] = token;
+
+        usersCol.update({ _id: user._id }, updateObj, function (err) {
+
+            if (err) { return link.send(400, err); }
 
             // create the mail data
             var mailData = {
@@ -67,11 +65,7 @@ exports.forgot = function(link) {
             // send mail
             sendMail(mailData, function (err) {
 
-                // handle error
-                if (err) {
-                    link.send(400, err);
-                    return;
-                }
+                if (err) { return link.send(500, err); }
 
                 // operation complete
                 link.send(200);
@@ -81,11 +75,13 @@ exports.forgot = function(link) {
 };
 
 exports.reset = function(link) {
+
     // the reset form is requested
-    if (link.req.method === "GET") {
+    if (link.req.method === 'GET') {
 
         if (!link.query.token || !link.query.username) {
             link.send(400, 'Bad link!');
+            return;
         }
 
         // get the token and username
@@ -98,17 +94,17 @@ exports.reset = function(link) {
     }
 
     // the reset form is submitted
-    if (link.req.method === "POST") {
-        var password = (link.data.password || "").trim();
-        var repassword = (link.data.repassword || "").trim();
-        var token = (link.data.token || "").trim();
-        var username = (link.data.username || "").trim();
+    if (link.req.method === 'POST') {
+        var password = (link.data.password || '').trim();
+        var repassword = (link.data.repassword || '').trim();
+        var token = (link.data.token || '').trim();
+        var username = (link.data.username || '').trim();
 
         if (!link.data.password) {
-            var message = "Missing password";
+            var message = 'Missing password';
         }
         if (link.data.password !== link.data.repassword) {
-            var message = "Passwords do not match";
+            var message = 'Passwords do not match';
         }
 
         // TODO make some configurable regexp password policy
@@ -123,46 +119,32 @@ exports.reset = function(link) {
             }
 
             // check to see if the token matches
-            if (user[link.params.tokenkey] !== token) {
-                link.send(400, "Token does not match");
+            if (!token || findValue(user, link.params.tokenkey) !== token) {
+                link.send(400, 'Token does not match');
                 return;
             }
 
             // change the password
             var updateObj = {
-                $set: {
-                    pwd: password
-                }
+                $set: {},
+                $unset: {}
             };
-            usersCol.update({ _id: user._id}, updateObj, function (err) {
 
-                // handle error
-                if (err) {
-                    link.send(400, err);
-                    return;
+            // change the password
+            updateObj['$set'][link.params.passkey] = password;
+            // delete the security token
+            updateObj['$unset'][link.params.tokenkey] = 1;
+
+            usersCol.update({ _id: user._id }, updateObj, function (err) {
+
+                if (err) { return link.send(400, err); }
+
+                if (link.params.resetRedirect) {
+                    link.res.headers.location = 'http://' + link.req.headers.host + link.params.resetRedirect;
+                    return link.send(302);
                 }
 
-                // delete the security token
-                // change the password
-                var updateObj = {
-                    $unset: {}
-                }
-                updateObj.$unset[link.params.tokenkey] = "";
-                usersCol.update({ _id: user._id}, updateObj, function (err) {
-
-                    // handle error
-                    if (err) {
-                        link.send(400, err);
-                        return;
-                    }
-
-                    if (link.params.resetRedirect) {
-                        link.res.headers.location = "http://" + link.req.headers.host + link.params.resetRedirect;
-                        link.send(302);
-                    } else {
-                        link.send(200, "OK");
-                    }
-                });
+                link.send(200, 'Password reset');
             });
         });
     }
@@ -170,14 +152,10 @@ exports.reset = function(link) {
 
 exports.logout = function(link) {
 
-    // TODO shouldn't this be fixed in Mono?
-    // send no cache headers IE bug
-    link.res.headers["cache-control"] = "no-cache";
-
     M.session.get(link, function(link) {
 
         if (!link.session._uid) {
-            link.send(400, "You are not logged in");
+            link.send(400, 'You are not logged in');
             return;
         }
 
@@ -190,7 +168,7 @@ exports.logout = function(link) {
 exports.userInfo = function(link) {
 
     // send no cache headers IE bug
-    link.res.headers["cache-control"] = "no-cache";
+    link.res.headers['cache-control'] = 'no-cache';
 
     M.session.get(link, function(link) {
 
@@ -209,11 +187,11 @@ exports.userInfo = function(link) {
 exports.login = function(link) {
 
     // send no cache headers IE bug
-    link.res.headers["cache-control"] = "no-cache";
+    link.res.headers['cache-control'] = 'no-cache';
 
     // already logged in
     if (link.session._rid != M.config.app.publicRole && link.session._uid) {
-        link.send(400, "You are already logged in");
+        link.send(400, 'You are already logged in');
         return;
     }
 
@@ -222,7 +200,7 @@ exports.login = function(link) {
 
     // link data is missing
     if (!data) {
-        link.send(400, "Missing login data");
+        link.send(400, 'Missing login data');
         return;
     }
 
@@ -230,16 +208,16 @@ exports.login = function(link) {
     link.params = link.params || {};
     link.params.on = link.params.on || {};
 
-    var username = (data.username || "").trim();
+    var username = (data.username || '').trim();
     delete data.username;
-    var password = (data.password || "").trim();
+    var password = (data.password || '').trim();
     delete data.password;
     var additionals = data;
 
     // user or password not provided
     if (!username || !password) {
         // send error message
-        var errMsg = username ? "ERROR_MISSING_PASSWORD" : "ERROR_MISSING_USERNAME";
+        var errMsg = username ? 'ERROR_MISSING_PASSWORD' : 'ERROR_MISSING_USERNAME';
         return link.send(400, errMsg);
     }
 
@@ -286,16 +264,16 @@ function sendMail (data, callback) {
     }
 
     var template = {
-        "template_name": data.template,
-        "template_content": [],
-        "message": {
-            "to": [{
-                "email": data.receiver,
-                "type": "to"
+        'template_name': data.template,
+        'template_content': [],
+        'message': {
+            'to': [{
+                'email': data.receiver,
+                'type': 'to'
             }],
-            "from_email": data.sender,
-            "from_name": 'Jillix Support Team',
-            "global_merge_vars": data.mergeVars
+            'from_email': data.sender,
+            'from_name': 'Jillix Support Team',
+            'global_merge_vars': data.mergeVars
         }
     };
 
@@ -330,12 +308,12 @@ function getUserInfo(link, user, callback) {
 
     // no userInfo handler specified
     if (!handler) {
-        return callback("You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.");
+        return callback('You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
     }
 
     api_customCode(handler, function(err, foo) {
 
-        if (err) { return callback("Could not find the userInfo handler") }
+        if (err) { return callback('Could not find the userInfo handler') }
 
         foo(user, link.session, callback);
     });
@@ -361,9 +339,9 @@ function onError(link, initialError, callback) {
 function api_customCode(handler, callback) {
 
     try {
-        var modulePath = handler["module"];
-        var functionName = handler["function"];
-        var path = M.config.APPLICATION_ROOT + M.config.app.id + "/" + modulePath;
+        var modulePath = handler['module'];
+        var functionName = handler['function'];
+        var path = M.config.APPLICATION_ROOT + M.config.app.id + '/' + modulePath;
 
         // TODO do this only in debug mode
         //      even so it is still problematic it the module caches data in RAM
@@ -372,11 +350,11 @@ function api_customCode(handler, callback) {
         var module = require(path);
         var func = module[functionName];
 
-        if (func && typeof func === "function") {
+        if (func && typeof func === 'function') {
             return callback(null, func);
         }
 
-        throw new Error("Function '" + functionName + "' not found in module: " + modulePath);
+        throw new Error('Function "' + functionName + '" not found in module: ' + modulePath);
 
     } catch (err) {
         console.error(err);
@@ -388,7 +366,7 @@ function api_customCode(handler, callback) {
 function getUser(params, username, password, callback, link) {
 
     if (!params) {
-        return callback(new Error("Missing operation parameters"));
+        return callback(new Error('Missing operation parameters'));
     }
 
     M.datasource.resolve(params.ds, function(err, ds) {
@@ -404,29 +382,29 @@ function getUser(params, username, password, callback, link) {
                 if (err) { return callback(err); }
 
                 var filter = {};
-                filter[params.userkey] = new RegExp("^" + username + "$", "i");
+                filter[params.userkey] = new RegExp('^' + username + '$', 'i');
 
                 if (password !== null) {
-                    // "md5-32/sha1-40/sha256-64/auto"
+                    // 'md5-32/sha1-40/sha256-64/auto'
                     switch (params.hash) {
-                        case "md5":
-                        case "sha1":
-                        case "sha256":
-                        case "sha512":
+                        case 'md5':
+                        case 'sha1':
+                        case 'sha256':
+                        case 'sha512':
                             var hash = crypto.createHash(params.hash);
                             hash.update(password);
-                            password = hash.digest("hex").toLowerCase();
+                            password = hash.digest('hex').toLowerCase();
                             break;
-                        case "none":
+                        case 'none':
                             break;
                         default:
-                            return callback(params.hash ? "Missing hash algorithm" : "Invalid hash algorithm");
+                            return callback(params.hash ? 'Missing hash algorithm' : 'Invalid hash algorithm');
                     }
                     filter[params.passkey] = password;
                 }
 
                 // a custom query path was provided
-                if (typeof params.customQuery === "string") {
+                if (typeof params.customQuery === 'string') {
 
                     try {
                         // call the function
@@ -443,7 +421,7 @@ function getUser(params, username, password, callback, link) {
 
                                 // no user
                                 if (!user) {
-                                    return callback("ERROR_USER_OR_PASS_NOT_VALID");
+                                    return callback('ERROR_USER_OR_PASS_NOT_VALID');
                                 }
 
                                 // user found
@@ -463,7 +441,7 @@ function getUser(params, username, password, callback, link) {
                     if (err) { return callback(err); }
 
                     if (!user) {
-                        return callback("ERROR_USER_OR_PASS_NOT_VALID");
+                        return callback('ERROR_USER_OR_PASS_NOT_VALID');
                     }
 
                     callback(null, user, collection);
@@ -471,4 +449,20 @@ function getUser(params, username, password, callback, link) {
             });
         });
     });
+}
+
+function findValue (parent, dotNot) {
+
+    if (!parent || !dotNot) return undefined;
+
+    var splits = dotNot.split('.');
+    var value;
+
+    for (var i = 0; i < splits.length; ++i) {
+        value = parent[splits[i]];
+        if (value === undefined) return undefined;
+        if (typeof value === 'object') parent = value;
+    }
+
+    return value;
 }
