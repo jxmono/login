@@ -32,6 +32,16 @@ Ends a session for the logged in user.
 
 Gets the user session object or `undefined` if the user is not logged in.
 
+### `forgot`
+
+Sends an email the user with a password reset link.
+
+**Node:** Currently, this feature is only supported for login modules that use email addresses as user names.
+
+### `reset`
+
+If this operation receives a valid user name and a password reset token, it will display a simple reset password form. Upon form submission, the user password is reset.
+
 ## Custom Code
 
 ### `userInfo`
@@ -60,7 +70,8 @@ and it must return through the `callback` a user information object (if no error
 ## Changelog
 
 ### dev
- - Add new features here
+ - Added reset password functionality implemented with the `reset` and `forgot` operations
+ - Replaced most of the error messages with error codes (to be translated/properly displayed by applications)
 
 ### v0.1.12
  - `Events v0.1.11`

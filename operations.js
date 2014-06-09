@@ -6,13 +6,7 @@ var jxutils = require('jxutils');
 exports.forgot = function(link) {
 
     // get link data
-    var data = link.data;
-
-    // link data is missing
-    if (!data) {
-        link.send(400, 'Missing forgot data');
-        return;
-    }
+    var data = link.data || {};
 
     // set params
     link.params = link.params || {};
@@ -80,8 +74,7 @@ exports.reset = function(link) {
     if (link.req.method === 'GET') {
 
         if (!link.query.token || !link.query.username) {
-            link.send(400, 'Bad link!');
-            return;
+            return link.send(400, 'ERROR_INVALID_RESET_LINK');
         }
 
         // get the token and username
@@ -101,10 +94,10 @@ exports.reset = function(link) {
         var username = (link.data.username || '').trim();
 
         if (!link.data.password) {
-            var message = 'Missing password';
+            return link.send(400, 'ERROR_MISSING_PASSWORD');
         }
         if (link.data.password !== link.data.repassword) {
-            var message = 'Passwords do not match';
+            return link.send(400, 'ERROR_PASSWORDS_DO_NOT_MATCH');
         }
 
         // TODO make some configurable regexp password policy
@@ -120,8 +113,7 @@ exports.reset = function(link) {
 
             // check to see if the token matches
             if (!token || jxutils.findValue(user, link.params.tokenkey) !== token) {
-                link.send(400, 'Token does not match');
-                return;
+                return link.send(400, 'ERROR_INVALID_RESET_TOKEN');
             }
 
             // change the password
@@ -155,8 +147,7 @@ exports.logout = function(link) {
     M.session.get(link, function(link) {
 
         if (!link.session._uid) {
-            link.send(400, 'You are not logged in');
-            return;
+            return link.send(400, 'ERROR_NOT_LOGGEN_IN');
         }
 
         link.session.end(true, function() {
@@ -191,18 +182,12 @@ exports.login = function(link) {
 
     // already logged in
     if (link.session._rid != M.config.app.publicRole && link.session._uid) {
-        link.send(400, 'You are already logged in');
+        link.send(400, 'ERROR_ALREADY_LOGGEN_IN');
         return;
     }
 
     // get link data
-    var data = link.data;
-
-    // link data is missing
-    if (!data) {
-        link.send(400, 'Missing login data');
-        return;
-    }
+    var data = link.data || {};
 
     // set params
     link.params = link.params || {};
@@ -216,9 +201,7 @@ exports.login = function(link) {
 
     // user or password not provided
     if (!username || !password) {
-        // send error message
-        var errMsg = username ? 'ERROR_MISSING_PASSWORD' : 'ERROR_MISSING_USERNAME';
-        return link.send(400, errMsg);
+        return link.send(400, username ? 'ERROR_MISSING_PASSWORD' : 'ERROR_MISSING_USERNAME');
     }
 
     // get user
@@ -254,13 +237,10 @@ exports.login = function(link) {
 
 function sendMail (data, callback) {
 
-    if (!callback) {
-        callback = function () {};
-    }
+    callback = callback || function () {};
 
     if (!data) {
-        callback('Missing data object!');
-        return;
+        return callback('ERROR_MISSING_EMAIL_DATA');
     }
 
     var template = {
@@ -280,7 +260,7 @@ function sendMail (data, callback) {
     mandrill_client.messages.sendTemplate(template, function(result) {
         //check to see if rejected
         if (result[0].status === 'rejected' || result[0].status === 'invalid') {
-            callback(result[0].reject_reason || 'Error on sending email, check if the email provided is valid');
+            callback(result[0].reject_reason || 'Error on sending email, check if the email address provided is valid');
         } else {
             callback(null);
         }
@@ -398,7 +378,7 @@ function getUser(params, username, password, callback, link) {
                         case 'none':
                             break;
                         default:
-                            return callback(params.hash ? 'Missing hash algorithm' : 'Invalid hash algorithm');
+                            return callback(params.hash ? 'ERROR_MISSING_HASH_ALGORITHM' : 'ERROR_INVALID_HASH_ALGORITHM');
                     }
                     filter[params.passkey] = password;
                 }
@@ -429,7 +409,6 @@ function getUser(params, username, password, callback, link) {
                             });
                         });
                     } catch (e) {
-
                         // exception
                         callback(e.message);
                     }
