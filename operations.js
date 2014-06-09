@@ -1,7 +1,7 @@
 var mandrill = require('mandrill-api/mandrill');
 var mandrill_client = new mandrill.Mandrill('D43S5u9IlGqY1wCE2qqrRg');
 var crypto = require('crypto');
-var locale = {};
+var jxutils = require('jxutils');
 
 exports.forgot = function(link) {
 
@@ -119,7 +119,7 @@ exports.reset = function(link) {
             }
 
             // check to see if the token matches
-            if (!token || findValue(user, link.params.tokenkey) !== token) {
+            if (!token || jxutils.findValue(user, link.params.tokenkey) !== token) {
                 link.send(400, 'Token does not match');
                 return;
             }
@@ -451,18 +451,3 @@ function getUser(params, username, password, callback, link) {
     });
 }
 
-function findValue (parent, dotNot) {
-
-    if (!parent || !dotNot) return undefined;
-
-    var splits = dotNot.split('.');
-    var value;
-
-    for (var i = 0; i < splits.length; ++i) {
-        value = parent[splits[i]];
-        if (value === undefined) return undefined;
-        if (typeof value === 'object') parent = value;
-    }
-
-    return value;
-}
