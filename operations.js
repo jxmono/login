@@ -1,5 +1,5 @@
 var mandrill = require('mandrill-api/mandrill');
-var mandrill_client = new mandrill.Mandrill('D43S5u9IlGqY1wCE2qqrRg');
+var mandrill_client;
 var crypto = require('crypto');
 var jxutils = require('jxutils');
 
@@ -10,6 +10,13 @@ exports.forgot = function(link) {
 
     // set params
     link.params = link.params || {};
+
+    // get the Mandrill Api Key
+    if (!link.params.mandrillKey) {
+        link.send(400, 'ERROR_MISSING_MANDRILL_API_KEY');
+        return;
+    }
+    mandrill_client = new mandrill.Mandrill(link.params.mandrillKey);
 
     var username = (data.username || '').trim();
     delete data.username;
