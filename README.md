@@ -72,6 +72,7 @@ and it must return through the `callback` a user information object (if no error
 ### dev
  - Added reset password functionality implemented with the `reset` and `forgot` operations
  - Replaced most of the error messages with error codes (to be translated/properly displayed by applications)
+ - Send an object containing the `filter`, the form data (object containing: `username` and `password fields) to the custom script.
 
 ### v0.1.12
  - `Events v0.1.11`
