@@ -53,7 +53,6 @@ exports.forgot = function(link) {
             // create the mail data
             var mailData = {
                 template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
-                receiver: username,
                 sender: link.params.sender,
                 mergeVars: [
                     {
@@ -63,14 +62,34 @@ exports.forgot = function(link) {
                 ]
             }
 
-            // send mail
-            sendMail(mailData, function (err) {
+            // check if a custom code for the reciver exists
+            if (link.params.customReceiverHandler) {
+                M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
 
-                if (err) { return link.send(500, err); }
+                    if (err) { return link.send(500, err); }
+                    mailData.receiver = receiver;
 
-                // operation complete
-                link.send(200);
-            });
+                    // send mail
+                    sendMail(mailData, function (err) {
+
+                        if (err) { return link.send(500, err); }
+
+                        // operation complete
+                        link.send(200);
+                    });
+                });
+            } else {
+                mailData.receiver = username;
+
+                // send mail
+                sendMail(mailData, function (err) {
+
+                    if (err) { return link.send(500, err); }
+
+                    // operation complete
+                    link.send(200);
+                });
+            }
         });
     }, link);
 };
