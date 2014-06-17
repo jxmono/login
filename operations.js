@@ -394,8 +394,16 @@ function getUser(params, username, password, callback, link) {
                 if (typeof params.customQuery === 'string') {
 
                     try {
+                        var customData = {
+                            filter: filter,
+                            form: {
+                                username: username,
+                                password: password
+                            }
+                        };
+
                         // call the function
-                        require(M.app.getPath() + params.customQuery)(link, params, filter, function (err, data) {
+                        require(M.app.getPath() + params.customQuery)(link, params, customData, function (err, data) {
 
                             // handle error
                             if (err) { return callback(err); }
