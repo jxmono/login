@@ -153,13 +153,18 @@ exports.reset = function(link) {
             // delete the security token
             updateObj['$unset'][link.params.tokenkey] = 1;
 
-            usersCol.update({ _id: user._id }, updateObj, function (err) {
+            usersCol.update({ _id: user._id }, updateObj, { multi: true }, function (err) {
 
                 if (err) { return link.send(400, err); }
 
                 if (link.params.resetRedirect) {
                     link.res.headers.location = 'http://' + link.req.headers.host + link.params.resetRedirect;
                     return link.send(302);
+                }
+
+                // check if the reset onSuccess handler exists
+                if (link.params.onSuccess) {
+                    M.emit(link.params.onSuccess, { user: user, link: link });
                 }
 
                 link.send(200, 'Password reset');
