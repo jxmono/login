@@ -157,14 +157,14 @@ exports.reset = function(link) {
 
                 if (err) { return link.send(400, err); }
 
-                if (link.params.resetRedirect) {
-                    link.res.headers.location = 'http://' + link.req.headers.host + link.params.resetRedirect;
-                    return link.send(302);
-                }
-
                 // check if the reset onSuccess handler exists
                 if (link.params.onSuccess) {
                     M.emit(link.params.onSuccess, { user: user, link: link });
+                }
+
+                if (link.params.resetRedirect) {
+                    link.res.headers.location = 'http://' + link.req.headers.host + link.params.resetRedirect;
+                    return link.send(302);
                 }
 
                 link.send(200, 'Password reset');
