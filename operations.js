@@ -128,6 +128,26 @@ exports.reset = function(link) {
 
         // TODO make some configurable regexp password policy
 
+        // handle hash
+        switch (link.params.hash) {
+            case 'md5':
+            case 'sha1':
+                var hash = crypto.createHash(link.params.hash);
+                hash.update(password);
+                password = hash.digest('hex').toLowerCase();
+                break;
+            case 'sha256':
+            case 'sha512':
+                var hash = crypto.createHash(link.params.hash);
+                hash.update(password);
+                password = hash.digest('hex').toLowerCase();
+                break;
+            case 'none':
+                break;
+            default:
+                return link.send(400, link.params.hash ? 'ERROR_MISSING_HASH_ALGORITHM' : 'ERROR_INVALID_HASH_ALGORITHM');
+        }
+
         // get user
         getUser(link.params, username, null, function(err, user, usersCol) {
 
@@ -400,6 +420,10 @@ function getUser(params, username, password, callback, link) {
                     switch (params.hash) {
                         case 'md5':
                         case 'sha1':
+                            var hash = crypto.createHash(params.hash);
+                            hash.update(password);
+                            password = hash.digest('hex').toLowerCase();
+                            break;
                         case 'sha256':
                         case 'sha512':
                             var hash = crypto.createHash(params.hash);
