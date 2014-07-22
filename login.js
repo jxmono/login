@@ -1,53 +1,18 @@
-// bind and events dependencies
-var Bind = require("github/jillix/bind")
-  , Events = require("github/jillix/events")
-  ;
+// Dependencies
+var Bind = require("github/jillix/bind");
+var Events = require("github/jillix/events");
+var Utils = require ("github/jillix/utils");
 
 /**
- * private: findValue
- *  This function searches a value in an object.
+ * Login
+ * A generic login module for Mono.
+ * Init module function. Called by Mono API.
  *
- *  Arguments
- *    @parent: an object
- *    @dotNot: string
- *
- *  Returns
- *    The value that was found in the object or undefined.
- *
- *  Example
- *    findValue({
- *        a: {
- *            b: {
- *                c: 10
- *            }
- *        }
- *    }, "a.b.c") === 10 // true
- *
- * */
-function findValue (parent, dotNot) {
-
-    if (!dotNot || !parent) return undefined;
-
-    var splits = String(dotNot).split(".");
-    var value;
-
-    for (var i = 0; i < splits.length; i++) {
-        value = parent[splits[i]];
-        if (value === undefined) { return undefined };
-        if (typeof value === "object") {
-            parent = value;
-        }
-    }
-
-    return value;
-}
-
-/**
- *
- *  Login
- *  A generic login module for Mono.
- *
- * */
+ * @name init
+ * @function
+ * @param {Object} conf Module config
+ * @return
+ */
 module.exports = function init (conf) {
 
     // set self and compute config
@@ -65,23 +30,26 @@ module.exports = function init (conf) {
     $forgot.find(".forgot-link").attr("href", config.forgotPage);
 
     /**
+     * getUserInfo
+     * This function returns the user information from session
      *
-     *  login#getUserInfo
-     *
-     *  This function returns the user information from session
-     *
-     * */
+     * @name getUserInfo
+     * @function
+     * @param {Function} callback The callback function
+     * @return
+     */
     self.getUserInfo = function (callback) {
         self.link("userInfo", callback);
     };
 
     /**
+     * logout
+     * Logs out the user
      *
-     *  login#logout
-     *
-     *  Logs out the user
-     *
-     * */
+     * @name logout
+     * @function
+     * @return {Boolean} Returns false
+     */
     self.logout = function () {
 
         // call logout operation and redirect to login
@@ -187,14 +155,14 @@ module.exports = function init (conf) {
 };
 
 /**
+ * submitForm
+ * This function submits the login form
  *
- * private: submitForm
- *  This function submits the login form
- *
- *  Arguments
- *    @form: the form jQuery object
- *
- * */
+ * @name submitForm
+ * @function
+ * @param {jQuery} form Form jQuery object
+ * @return
+ */
 function submitForm(form) {
 
     // get self
@@ -325,16 +293,14 @@ function submitForm(form) {
 }
 
 /**
+ * processConfig
+ * This function sets the config defaults
  *
- * private: processConfig
- *  This function sets the config defaults
- *
- *  Arguments
- *    @config: the config object
- *
- *  Returns
- *    config object
- * */
+ * @name processConfig
+ * @function
+ * @param {Object} config Module configuration object
+ * @return {Object} Module config
+ */
 function processConfig (config) {
 
     // get self

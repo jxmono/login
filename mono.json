@@ -6,7 +6,7 @@
         "/login.js",
         "github/jillix/bind/v0.2.2",
         "github/jillix/events/v0.1.11",
-        "http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"
+        "github/jillix/utils/v0.1.4"
     ],
     "operations": [
         { "file": "operations.js", "function": "login" },
