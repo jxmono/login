@@ -102,7 +102,7 @@ module.exports = function init (conf) {
 
                 // if the key exists find the value in data and set the text
                 if (key) {
-                    $infoElem.text(findValue(data, key));
+                    $infoElem.text(Utils.findValue(data, key));
                 }
             });
 
@@ -249,7 +249,7 @@ function submitForm(form) {
                     case "function":
 
                         // get the function
-                        var functionToCall = findValue(window, successPage.value)
+                        var functionToCall = Utils.findValue(window, successPage.value)
 
                         // does the function exist?
                         if (typeof functionToCall === "function") {
