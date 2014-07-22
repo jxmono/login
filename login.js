@@ -75,6 +75,24 @@ module.exports = function init (conf) {
         self.link("userInfo", callback);
     };
 
+    /**
+     *
+     *  login#logout
+     *
+     *  Logs out the user
+     *
+     * */
+    self.logout = function () {
+
+        // call logout operation and redirect to login
+        self.link("logout", function(err, data) {
+            window.location = self.config.loginPage;
+        });
+
+        // prevent default browser behavior
+        return false;
+    };
+
     // call get user info
     self.getUserInfo(function (err, data) {
 
@@ -124,16 +142,7 @@ module.exports = function init (conf) {
             $userInfo.show();
 
             // logout button click handler
-            $("#logoutButton", self.dom).on("click", function() {
-
-                // call logout operation and redirect to login
-                self.link("logout", function(err, data) {
-                    window.location = self.config.loginPage;
-                });
-
-                // prevent default browser behavior
-                return false;
-            });
+            $("#logoutButton", self.dom).on("click", self.logout);
 
             return;
         }
