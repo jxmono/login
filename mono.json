@@ -4,9 +4,9 @@
     "name": "login",
     "dependencies": [
         "/login.js",
-        "github/jillix/bind/v0.2.2",
-        "github/jillix/events/v0.1.11",
-        "github/jillix/utils/v0.1.4"
+        "github/jillix/bind/v0.3.0",
+        "github/jillix/events/v0.3.0",
+        "github/jillix/utils/v0.1.5"
     ],
     "operations": [
         { "file": "operations.js", "function": "login" },
