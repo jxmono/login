@@ -72,7 +72,7 @@ and it must return through the `callback` a user information object (if no error
 ### dev
  - Add fixes and new features here
 
-### v0.2.0
+### v0.2.1
  - Updated to Bind v0.3.1
 
 ### v0.2.0
