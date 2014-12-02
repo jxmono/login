@@ -95,6 +95,9 @@ exports.forgot = function(link) {
     }, link);
 };
 
+// jade reset template
+var template = null;
+
 exports.reset = function(link) {
 
     // the reset form is requested
@@ -114,7 +117,7 @@ exports.reset = function(link) {
 
             // compile jade file
             try {
-                var template = jade.compileFile(templatePath);
+                template = template || jade.compileFile(templatePath);
             } catch (err) {
                 return link.send(500, err);
             }
@@ -122,11 +125,11 @@ exports.reset = function(link) {
             var data = {
                 token: token,
                 username: username
-            }
+            };
 
             // set response headers
             link.res.setHeader('content-type', 'text/html');
-            link.res.send(200, template(data));
+            link.send(200, template(data));
             return;
         } else {
             // set response headers
