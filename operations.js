@@ -2,6 +2,7 @@ var mandrill = require('mandrill-api/mandrill');
 var mandrill_client;
 var crypto = require('crypto');
 var jxutils = require('jxutils');
+var jade = require('jade');
 
 exports.forgot = function(link) {
 
@@ -107,9 +108,32 @@ exports.reset = function(link) {
         var token = link.query.token;   
         var username = link.query.username;
 
-        link.res.setHeader('content-type', 'text/html');
-        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="' + token +'"><input name="username" type="hidden" value="' + username +'"></form>');
-        return;
+        // check if a jade template file exists
+        if (link.params.templateFile) {
+            var templatePath = M.app.getPath() + '/' + link.params.templateFile;
+
+            // compile jade file
+            try {
+                var template = jade.compileFile(templatePath);
+            } catch (err) {
+                return link.send(500, err);
+            }
+
+            var data = {
+                token: token,
+                username: username
+            }
+
+            // set response headers
+            link.res.setHeader('content-type', 'text/html');
+            link.res.send(200, template(data));
+            return;
+        } else {
+            // set response headers
+            link.res.setHeader('content-type', 'text/html');
+            link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="' + token +'"><input name="username" type="hidden" value="' + username +'"></form>');
+            return;
+        }
     }
 
     // the reset form is submitted
