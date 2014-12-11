@@ -375,7 +375,7 @@ function api_customCode(handler, callback) {
         var path = M.config.APPLICATION_ROOT + M.config.app.id + '/' + modulePath;
 
         // TODO do this only in debug mode
-        //      even so it is still problematic it the module caches data in RAM
+        //      even so it is still problematic if the module caches data in RAM
         delete require.cache[path];
 
         var module = require(path);
