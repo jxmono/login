@@ -35,39 +35,59 @@ exports.forgot = function(link) {
             return;
         }
 
-        // generate the token
-        var token = generateToken(10);
-        var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
+        runForgotCustomCode(link, user, function(err) {
 
-        var updateObj = {
-            $set : {}
-        }
-
-        // add the token to the user
-        updateObj.$set[link.params.tokenkey] = token;
-
-        usersCol.update({ _id: user._id }, updateObj, function (err) {
-
-            if (err) { return link.send(400, err); }
-
-            // create the mail data
-            var mailData = {
-                template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
-                sender: link.params.sender,
-                mergeVars: [
-                    {
-                        name: 'recover_link',
-                        content: resetLink
-                    }
-                ]
+            // handle error
+            if (err) {
+                link.send(403, err.message || err);
+                return;
             }
 
-            // check if a custom code for the reciver exists
-            if (link.params.customReceiverHandler) {
-                M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
+            // generate the token
+            var token = generateToken(10);
+            var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
 
-                    if (err) { return link.send(500, err); }
-                    mailData.receiver = receiver;
+            var updateObj = {
+                $set : {}
+            }
+
+            // add the token to the user
+            updateObj.$set[link.params.tokenkey] = token;
+
+            usersCol.update({ _id: user._id }, updateObj, function (err) {
+
+                if (err) { return link.send(400, err); }
+
+                // create the mail data
+                var mailData = {
+                    template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
+                    sender: link.params.sender,
+                    mergeVars: [
+                        {
+                            name: 'recover_link',
+                            content: resetLink
+                        }
+                    ]
+                }
+
+                // check if a custom code for the reciver exists
+                if (link.params.customReceiverHandler) {
+                    M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
+
+                        if (err) { return link.send(500, err); }
+                        mailData.receiver = receiver;
+
+                        // send mail
+                        sendMail(mailData, function (err) {
+
+                            if (err) { return link.send(500, err); }
+
+                            // operation complete
+                            link.send(200);
+                        });
+                    });
+                } else {
+                    mailData.receiver = username;
 
                     // send mail
                     sendMail(mailData, function (err) {
@@ -77,19 +97,8 @@ exports.forgot = function(link) {
                         // operation complete
                         link.send(200);
                     });
-                });
-            } else {
-                mailData.receiver = username;
-
-                // send mail
-                sendMail(mailData, function (err) {
-
-                    if (err) { return link.send(500, err); }
-
-                    // operation complete
-                    link.send(200);
-                });
-            }
+                }
+            });
         });
     }, link);
 };
@@ -345,6 +354,23 @@ function getUserInfo(link, user, callback) {
     api_customCode(handler, function(err, foo) {
 
         if (err) { return callback('Could not find the userInfo handler') }
+
+        foo(user, link.session, callback);
+    });
+}
+
+function runForgotCustomCode(link, user, callback) {
+
+    var handler = link.params.on.forgotCustomCode;
+
+    // no forgotCustomCode handler specified
+    if (!handler) {
+        return callback('You must define a forgotCustomCode handler function(user, session, callback) { ... }.');
+    }
+
+    api_customCode(handler, function(err, foo) {
+
+        if (err) { return callback('Could not find the forgotCustomCode handler') }
 
         foo(user, link.session, callback);
     });
