@@ -349,7 +349,9 @@ function getUserInfo(link, user, callback) {
 
     // no userInfo handler specified
     if (!handler) {
-        return callback('You must define a userInfo handler function(link, user, callback) { ... } where the callback returns an object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
+        return callback('You must define a userInfo handler function(user, session, callback) { ... } ' +
+            'where the callback should be called with an error (possibly null) and an ' +
+            'object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
     }
 
     api_customCode(handler, function(err, foo) {
@@ -366,7 +368,8 @@ function runForgotCustomCode(link, user, callback) {
 
     // no forgotCustomCode handler specified
     if (!handler) {
-        return callback('You must define a forgotCustomCode handler function(user, session, callback) { ... }.');
+        return callback('You must define a forgotCustomCode handler function(user, session, callback) { ... } ' +
+            'where the callback should be called with an error (possibly null).');
     }
 
     api_customCode(handler, function(err, foo) {
