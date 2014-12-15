@@ -34,7 +34,7 @@ exports.forgot = function(link) {
             return;
         }
 
-        runForgotCustomCode(link, user, function(err) {
+        emitUserCheckEvent(link, user, function(err) {
 
             // handle error
             if (err) {
@@ -362,19 +362,19 @@ function getUserInfo(link, user, callback) {
     });
 }
 
-function runForgotCustomCode(link, user, callback) {
+function emitUserCheckEvent(link, user, callback) {
 
-    var handler = link.params.on.forgotCustomCode;
+    var handler = link.params.on.userCheck;
 
     // no forgotCustomCode handler specified
     if (!handler) {
-        return callback('You must define a forgotCustomCode handler function(user, session, callback) { ... } ' +
+        return callback('You must define a userCheck handler function(user, session, callback) { ... } ' +
             'where the callback should be called with an error (possibly null).');
     }
 
     api_customCode(handler, function(err, foo) {
 
-        if (err) { return callback('Could not find the forgotCustomCode handler') }
+        if (err) { return callback('Could not find the userCheck handler') }
 
         foo(user, link.session, callback);
     });
