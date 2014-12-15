@@ -1,4 +1,5 @@
 var mandrill = require('mandrill-api/mandrill');
+var mandrillClient = null;
 var crypto = require('crypto');
 var jxutils = require('jxutils');
 
@@ -68,7 +69,7 @@ exports.forgot = function(link) {
                     ]
                 }
 
-                var client = new mandrill.Mandrill(link.params.mandrillKey);
+                var mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
 
                 // check if a custom code for the reciver exists
                 if (link.params.customReceiverHandler) {
@@ -78,7 +79,7 @@ exports.forgot = function(link) {
                         mailData.receiver = receiver;
 
                         // send mail
-                        sendMail(client, mailData, function (err) {
+                        sendMail(mandrillClient, mailData, function (err) {
 
                             if (err) { return link.send(500, err); }
 
@@ -90,7 +91,7 @@ exports.forgot = function(link) {
                     mailData.receiver = username;
 
                     // send mail
-                    sendMail(client, mailData, function (err) {
+                    sendMail(mandrillClient, mailData, function (err) {
 
                         if (err) { return link.send(500, err); }
 
