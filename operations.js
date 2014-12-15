@@ -1,5 +1,4 @@
 var mandrill = require('mandrill-api/mandrill');
-var mandrill_client;
 var crypto = require('crypto');
 var jxutils = require('jxutils');
 
@@ -16,7 +15,6 @@ exports.forgot = function(link) {
         link.send(400, 'ERROR_MISSING_MANDRILL_API_KEY');
         return;
     }
-    mandrill_client = new mandrill.Mandrill(link.params.mandrillKey);
 
     var username = (data.username || '').trim();
     delete data.username;
@@ -45,7 +43,7 @@ exports.forgot = function(link) {
 
             // generate the token
             var token = generateToken(10);
-            var resetLink = 'http://' + link.req.headers.host + '/@/login/reset?username=' + username + '&token=' + token;
+            var resetLink = 'http://' + link.req.headers.host + '/@/' + link.operation.module + '/reset?username=' + username + '&token=' + token;
 
             var updateObj = {
                 $set : {}
@@ -70,6 +68,8 @@ exports.forgot = function(link) {
                     ]
                 }
 
+                var client = new mandrill.Mandrill(link.params.mandrillKey);
+
                 // check if a custom code for the reciver exists
                 if (link.params.customReceiverHandler) {
                     M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
@@ -78,7 +78,7 @@ exports.forgot = function(link) {
                         mailData.receiver = receiver;
 
                         // send mail
-                        sendMail(mailData, function (err) {
+                        sendMail(client, mailData, function (err) {
 
                             if (err) { return link.send(500, err); }
 
@@ -90,7 +90,7 @@ exports.forgot = function(link) {
                     mailData.receiver = username;
 
                     // send mail
-                    sendMail(mailData, function (err) {
+                    sendMail(client, mailData, function (err) {
 
                         if (err) { return link.send(500, err); }
 
@@ -117,7 +117,7 @@ exports.reset = function(link) {
         var username = link.query.username;
 
         link.res.setHeader('content-type', 'text/html');
-        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="' + token +'"><input name="username" type="hidden" value="' + username +'"></form>');
+        link.send(200, '<form method="POST"><table><tr><td>New password: </td><td><input name="password" type="password"></td></tr><tr><td>Retype password: </td><td><input name="repassword" type="password"></td></tr><tr><td></td><td><button type="submit">Submit</button></td></tr><input name="token" type="hidden" value="' + token + '"><input name="username" type="hidden" value="' + username +'"></form>');
         return;
     }
 
@@ -295,7 +295,7 @@ exports.login = function(link) {
     }, link);
 };
 
-function sendMail (data, callback) {
+function sendMail (client, data, callback) {
 
     callback = callback || function () {};
 
@@ -317,7 +317,7 @@ function sendMail (data, callback) {
         }
     };
 
-    mandrill_client.messages.sendTemplate(template, function(result) {
+    client.messages.sendTemplate(template, function(result) {
         //check to see if rejected
         if (result[0].status === 'rejected' || result[0].status === 'invalid') {
             callback(result[0].reject_reason || 'Error on sending email, check if the email address provided is valid');
