@@ -69,7 +69,7 @@ exports.forgot = function(link) {
                     ]
                 }
 
-                var mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
+                mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
 
                 // check if a custom code for the reciver exists
                 if (link.params.customReceiverHandler) {
