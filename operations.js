@@ -120,7 +120,7 @@ exports.reset = function(link) {
                 if (err) { return link.send(400, err); }
 
                 // check if the reset on.success handler exists
-                if (link.params.on.success) {
+                if (link.params.on && link.params.on.success) {
                     M.emit(link.params.on.success, { user: user, link: link });
                 }
 
