@@ -34,8 +34,7 @@ exports.forgot = function(link) {
             return;
         }
 
-        emitUserCheckEvent(link, user, function(err) {
-
+        function userCheckCallback(err) {
             // handle error
             if (err) {
                 link.send(403, err.message || err);
@@ -100,7 +99,16 @@ exports.forgot = function(link) {
                     });
                 }
             });
-        });
+        }
+
+        // no userCheck handler event specified
+        if (!link.params.on || !link.params.on.userCheck) {
+            userCheckCallback('You must define a userCheck handler event with handlers' +
+                ' in the form of function(user, session, callback) { ... }' +
+                ' where the callback will be called with an error (possibly null).');
+        }
+
+        M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
     }, link);
 };
 
@@ -357,24 +365,6 @@ function getUserInfo(link, user, callback) {
     api_customCode(handler, function(err, foo) {
 
         if (err) { return callback('Could not find the userInfo handler') }
-
-        foo(user, link.session, callback);
-    });
-}
-
-function emitUserCheckEvent(link, user, callback) {
-
-    var handler = link.params.on.userCheck;
-
-    // no forgotCustomCode handler specified
-    if (!handler) {
-        return callback('You must define a userCheck handler function(user, session, callback) { ... } ' +
-            'where the callback should be called with an error (possibly null).');
-    }
-
-    api_customCode(handler, function(err, foo) {
-
-        if (err) { return callback('Could not find the userCheck handler') }
 
         foo(user, link.session, callback);
     });
