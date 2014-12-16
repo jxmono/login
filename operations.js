@@ -30,84 +30,8 @@ exports.forgot = function(link) {
 
         // handle error
         if (err) {
-            link.send(400, err);
+            link.send(err.code || 400, err.message || err);
             return;
-        }
-
-        function userCheckCallback(err) {
-            // handle error
-            if (err) {
-                link.send(403, err.message || err);
-                return;
-            }
-
-            // generate the token
-            var token = generateToken(10);
-            var resetLink = 'http://' + link.req.headers.host + '/@/' + link.operation.module + '/reset?username=' + username + '&token=' + token;
-
-            var updateObj = {
-                $set : {}
-            }
-
-            // add the token to the user
-            updateObj.$set[link.params.tokenkey] = token;
-
-            usersCol.update({ _id: user._id }, updateObj, function (err) {
-
-                if (err) { return link.send(400, err); }
-
-                // create the mail data
-                var mailData = {
-                    template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
-                    sender: link.params.sender,
-                    mergeVars: [
-                        {
-                            name: 'recover_link',
-                            content: resetLink
-                        }
-                    ]
-                }
-
-                mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
-
-                // check if a custom code for the reciver exists
-                if (link.params.customReceiverHandler) {
-                    M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
-
-                        if (err) { return link.send(500, err); }
-                        mailData.receiver = receiver;
-
-                        // send mail
-                        sendMail(mandrillClient, mailData, function (err) {
-
-                            if (err) { return link.send(500, err); }
-
-                            // operation complete
-                            link.send(200);
-                        });
-                    });
-                } else {
-                    mailData.receiver = username;
-
-                    // send mail
-                    sendMail(mandrillClient, mailData, function (err) {
-
-                        if (err) { return link.send(500, err); }
-
-                        // operation complete
-                        link.send(200);
-                    });
-                }
-            });
-        }
-
-        // no userCheck handler event specified
-        if (!link.params.on || !link.params.on.userCheck) {
-            userCheckCallback('You must define a userCheck handler event with handlers' +
-                ' in the form of function(user, session, callback) { ... }' +
-                ' where the callback will be called with an error (possibly null).');
-        } else {
-            M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
         }
     }, link);
 };
@@ -171,7 +95,7 @@ exports.reset = function(link) {
 
             // handle error
             if (err) {
-                link.send(400, err);
+                link.send(err.code || 400, err.message || err);
                 return;
             }
 
@@ -278,7 +202,7 @@ exports.login = function(link) {
 
         // handle error
         if (err) {
-            link.send(400, err);
+            link.send(err.code || 400, err.message || err);
             return;
         }
 
@@ -403,6 +327,99 @@ function getUser(params, username, password, callback, link) {
                     filter[params.passkey] = password;
                 }
 
+                function userCheckCallback(err) {
+                    // handle error
+                    if (err) {
+                        callback({
+                            code: 403,
+                            message: err.message || err
+                        });
+                        return;
+                    }
+
+                    // generate the token
+                    var token = generateToken(10);
+                    var resetLink = 'http://' + link.req.headers.host + '/@/' + link.operation.module + '/reset?username=' + username + '&token=' + token;
+
+                    var updateObj = {
+                        $set : {}
+                    }
+
+                    // add the token to the user
+                    updateObj.$set[link.params.tokenkey] = token;
+
+                    usersCol.update({ _id: user._id }, updateObj, function (err) {
+
+                        if (err) {
+                            return callback({
+                                code: 400,
+                                message: err
+                            });
+                        }
+
+                        // create the mail data
+                        var mailData = {
+                            template: (typeof link.params.template === 'object') ? link.params.template[link.session.locale] : link.params.template,
+                            sender: link.params.sender,
+                            mergeVars: [
+                                {
+                                    name: 'recover_link',
+                                    content: resetLink
+                                }
+                            ]
+                        }
+
+                        mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
+
+                        // check if a custom code for the reciver exists
+                        if (link.params.customReceiverHandler) {
+                            M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
+
+                                if (err) {
+                                    return callback({
+                                        code: 500,
+                                        message: err
+                                    });
+                                }
+                                mailData.receiver = receiver;
+
+                                // send mail
+                                sendMail(mandrillClient, mailData, function (err) {
+
+                                    if (err) {
+                                        return callback({
+                                            code: 500,
+                                            message: err
+                                        });
+                                    }
+
+                                    // operation complete
+                                    callback(null, user, collection);
+                                });
+                            });
+                        } else {
+                            mailData.receiver = username;
+
+                            // send mail
+                            sendMail(mandrillClient, mailData, function (err) {
+
+                                if (err) { return link.send(500, err); }
+
+                                // operation complete
+                                callback(null, user, collection);
+                            });
+                        }
+                    });
+                }
+
+                // no userCheck handler event specified
+                if (!link.params.on || !link.params.on.userCheck) {
+                    userCheckCallback('You must define a userCheck handler event with handlers' +
+                        ' in the form of function(user, session, callback) { ... }' +
+                        ' where the callback will be called with an error (possibly null).');
+                    return;
+                }
+
                 if (params.on && typeof params.on.query === 'string') {
                     var customData = {
                         filter: filter,
@@ -429,7 +446,7 @@ function getUser(params, username, password, callback, link) {
                             }
 
                             // user found
-                            callback(null, user, collection);
+                            M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
                         });
                     });
                     return;
@@ -443,7 +460,7 @@ function getUser(params, username, password, callback, link) {
                         return callback('ERROR_USER_OR_PASS_NOT_VALID');
                     }
 
-                    callback(null, user, collection);
+                    M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
                 });
             });
         });
