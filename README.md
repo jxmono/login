@@ -108,12 +108,12 @@ and it must return through the `callback` a user information object, `userInfo` 
 
 ### dev
 
- - Implement a `userCheck` event in `login`, `forgot` and `reset` operations;
- - Reimplement `userInfo` event from the `login` operation using `M.emit`;
- - Rename `onSuccess` event from the `reset` operation to `on.success`;
- - Rename `params.customQuery` event from the `login`, `forgot` and `reset` operations to `params.on.query`;
- - Remove dead code;
- - Update the documentation in README.md.
+ - Implemented a `userCheck` event in `login`, `forgot` and `reset` operations;
+ - Reimplemented `userInfo` event from the `login` operation using `M.emit`;
+ - Renamed `onSuccess` event from the `reset` operation to `on.success`;
+ - Renamed `params.customQuery` event from the `login`, `forgot` and `reset` operations to `params.on.query`;
+ - Removed dead code;
+ - Updated the documentation in README.md.
  - Add fixes and new features here
 
 ### v0.2.1
