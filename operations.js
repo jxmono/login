@@ -285,9 +285,7 @@ exports.login = function(link) {
         // set user additionals
         user.additionals = additionals;
 
-        // get user info
-        getUserInfo(link, user, function(err, userInfo) {
-
+        function userInfoCallback(err, userInfo) {
             // handle error
             if (err) {
                 link.send(403, err.message || err);
@@ -300,7 +298,17 @@ exports.login = function(link) {
                 // send user info data
                 link.send(200, userInfo.data);
             });
-        });
+        }
+
+        if (!link.params.on || !link.params.on.userInfo) {
+            userInfoCallback('You must define a userInfo handler event with handlers' +
+                ' in the form of function(user, session, callback) { ... }' +
+                ' where the callback will be called with an error (possibly null) and an' +
+                ' object of the form: { rid: …, uid: …, locale: …, data: … }.' +
+                ' The data is an optional hash.');
+        }
+
+        M.emit(link.params.on.userInfo, user, link.session, userInfoCallback);
     }, link);
 };
 
@@ -349,25 +357,6 @@ function generateToken(length) {
     }
 
     return token;
-}
-
-function getUserInfo(link, user, callback) {
-
-    var handler = link.params.on.userInfo;
-
-    // no userInfo handler specified
-    if (!handler) {
-        return callback('You must define a userInfo handler function(user, session, callback) { ... } ' +
-            'where the callback should be called with an error (possibly null) and an ' +
-            'object of the form: { rid: …, uid: …, locale: …, data: … }. The data is an optional hash.');
-    }
-
-    api_customCode(handler, function(err, foo) {
-
-        if (err) { return callback('Could not find the userInfo handler') }
-
-        foo(user, link.session, callback);
-    });
 }
 
 function onError(link, initialError, callback) {
