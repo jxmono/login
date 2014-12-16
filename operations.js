@@ -360,48 +360,13 @@ function generateToken(length) {
 }
 
 function onError(link, initialError, callback) {
-
-    var handler = link.params.on.error;
-
-    // no custom error handler specified
-    if (!handler) {
+    // no custom error handler event specified
+    if (!link.params.on || !link.params.on.error) {
         return callback(initialError);
     }
-
-    api_customCode(handler, function(err, foo) {
-
-        if (err) { return callback(initialError) }
-
-        foo(link, initialError, callback);
-    });
+    
+    M.emit(link.params.on.error, link, initialError, callback);
 }
-
-function api_customCode(handler, callback) {
-
-    try {
-        var modulePath = handler['module'];
-        var functionName = handler['function'];
-        var path = M.config.APPLICATION_ROOT + M.config.app.id + '/' + modulePath;
-
-        // TODO do this only in debug mode
-        //      even so it is still problematic if the module caches data in RAM
-        delete require.cache[path];
-
-        var module = require(path);
-        var func = module[functionName];
-
-        if (func && typeof func === 'function') {
-            return callback(null, func);
-        }
-
-        throw new Error('Function "' + functionName + '" not found in module: ' + modulePath);
-
-    } catch (err) {
-        console.error(err);
-        callback(err);
-    }
-}
-
 
 function getUser(params, username, password, callback, link) {
 
