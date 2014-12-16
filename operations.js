@@ -106,9 +106,9 @@ exports.forgot = function(link) {
             userCheckCallback('You must define a userCheck handler event with handlers' +
                 ' in the form of function(user, session, callback) { ... }' +
                 ' where the callback will be called with an error (possibly null).');
+        } else {
+            M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
         }
-
-        M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
     }, link);
 };
 
@@ -306,9 +306,9 @@ exports.login = function(link) {
                 ' where the callback will be called with an error (possibly null) and an' +
                 ' object of the form: { rid: …, uid: …, locale: …, data: … }.' +
                 ' The data is an optional hash.');
+        } else {
+            M.emit(link.params.on.userInfo, user, link.session, userInfoCallback);
         }
-
-        M.emit(link.params.on.userInfo, user, link.session, userInfoCallback);
     }, link);
 };
 
