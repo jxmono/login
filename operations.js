@@ -187,9 +187,9 @@ exports.reset = function(link) {
 
                 if (err) { return link.send(400, err); }
 
-                // check if the reset onSuccess handler exists
-                if (link.params.onSuccess) {
-                    M.emit(link.params.onSuccess, { user: user, link: link });
+                // check if the reset on.success handler exists
+                if (link.params.on.success) {
+                    M.emit(link.params.on.success, { user: user, link: link });
                 }
 
                 if (link.params.resetRedirect) {
