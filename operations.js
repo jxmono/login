@@ -359,15 +359,6 @@ function generateToken(length) {
     return token;
 }
 
-function onError(link, initialError, callback) {
-    // no custom error handler event specified
-    if (!link.params.on || !link.params.on.error) {
-        return callback(initialError);
-    }
-    
-    M.emit(link.params.on.error, link, initialError, callback);
-}
-
 function getUser(params, username, password, callback, link) {
 
     if (!params) {
