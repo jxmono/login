@@ -42,34 +42,78 @@ Sends an email the user with a password reset link.
 
 If this operation receives a valid user name and a password reset token, it will display a simple reset password form. Upon form submission, the user password is reset.
 
-## Custom Code
+## Events for custom code
 
-### `userInfo`
+For every operation in this module, the events are emitted in the order in which they are enumerated below.
 
-The `userInfo` configuration and handler in the application is required in order for the module to be able to be able to build the user information to be saved in the new session. This handler must have the signature:
+To register a handler event you edit the `application.json` file of the application in the following way: after replacing the {miid} and {operation} placeholders, you add as properties to this object the events to be handled: `miids.{miid}.operations.{operation}.params.on`.
+
+### The `login` operation
+
+- `query`
+
+*[optional]* You can define a `query` handler event with handlers in the form of `function (link, params, customData, callback) { ... }` where the callback should be called with an error (possibly `null`) and a `data` object.
+
+- `userCheck`
+
+*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+
+- `userInfo`
+
+*[required]* The `userInfo` handler event is required in order for the module to be able to build the user information to be saved in the new session. The handlers of this event should have this signature:
 
 ```js
 function (user, session, callback) {
-    // ... compute err and userInfo
+    // ... compute err (possibly null) and userInfo
     callback(err, userInfo);
 }
 ```
 
-and it must return through the `callback` a user information object (if no error state is found). This object must contain:
+and it must return through the `callback` a user information object, `userInfo` (if no error state is found). This object must contain:
 
 ```js
 {
-    rid: …, // the Mono role id (use M.app.getRole to get the role ID for a role with a given name)
+    rid: …, // the Mono role ID (use M.app.getRole to get the role ID for a role with a given name)
     uid: …, // the user ID (application specific)
     locale: …, // the user locale (2 letter lower case language code)
     data: … // extra session data that will be saved as session.data (application specific)
 }
 ```
 
+### The `forgot` operation
+
+- `query`
+
+*[optional]* You can define a `query` handler event with handlers in the form of `function (link, params, customData, callback) { ... }` where the callback should be called with an error (possibly `null`) and a `data` object.
+
+- `userCheck`
+
+*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+
+### The `reset` operation
+
+- `query`
+
+*[optional]* You can define a `query` handler event with handlers in the form of `function (link, params, customData, callback) { ... }` where the callback should be called with an error (possibly `null`) and a `data` object.
+
+- `userCheck`
+
+*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+
+- `success`
+
+*[optional]* You can define a `success` handler event with handlers in the form of `function (data) { ... }` where `data` is an object with `user` and `link` properties.
 
 ## Changelog
 
 ### dev
+
+ - Implement a `userCheck` event in `login`, `forgot` and `reset` operations;
+ - Reimplement `userInfo` event from the `login` operation using `M.emit`;
+ - Rename `onSuccess` event from the `reset` operation to `on.success`;
+ - Rename `params.customQuery` event from the `login`, `forgot` and `reset` operations to `params.on.query`;
+ - Remove dead code;
+ - Update the documentation in README.md.
  - Add fixes and new features here
 
 ### v0.2.1
