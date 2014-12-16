@@ -403,43 +403,35 @@ function getUser(params, username, password, callback, link) {
                     filter[params.passkey] = password;
                 }
 
-                // a custom query path was provided
-                if (typeof params.customQuery === 'string') {
+                if (params.on && typeof params.on.query === 'string') {
+                    var customData = {
+                        filter: filter,
+                        form: {
+                            username: username,
+                            password: password
+                        }
+                    };
 
-                    try {
-                        var customData = {
-                            filter: filter,
-                            form: {
-                                username: username,
-                                password: password
-                            }
-                        };
+                    M.emit(params.on.query, link, params, customData, function (err, data) {
 
-                        // call the function
-                        require(M.app.getPath() + params.customQuery)(link, params, customData, function (err, data) {
+                        // handle error
+                        if (err) { return callback(err); }
+
+                        // find one
+                        collection.findOne(filter, function(err, user) {
 
                             // handle error
                             if (err) { return callback(err); }
 
-                            // find one
-                            collection.findOne(filter, function(err, user) {
+                            // no user
+                            if (!user) {
+                                return callback('ERROR_USER_OR_PASS_NOT_VALID');
+                            }
 
-                                // handle error
-                                if (err) { return callback(err); }
-
-                                // no user
-                                if (!user) {
-                                    return callback('ERROR_USER_OR_PASS_NOT_VALID');
-                                }
-
-                                // user found
-                                callback(null, user, collection);
-                            });
+                            // user found
+                            callback(null, user, collection);
                         });
-                    } catch (e) {
-                        // exception
-                        callback(e.message);
-                    }
+                    });
                     return;
                 }
 
