@@ -371,7 +371,7 @@ function getUser(params, username, password, callback, link) {
 
                         mandrillClient = mandrillClient || new mandrill.Mandrill(link.params.mandrillKey);
 
-                        // check if a custom code for the reciver exists
+                        // check if a custom code for the receiver exists
                         if (link.params.customReceiverHandler) {
                             M.emit(link.params.customReceiverHandler, { user: user, link: link }, function (err, receiver) {
 
