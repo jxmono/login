@@ -412,12 +412,13 @@ function getUser(params, username, password, callback, link) {
                     });
                 }
 
-                // no userCheck handler event specified
-                if (!link.params.on || !link.params.on.userCheck) {
-                    userCheckCallback('You must define a userCheck handler event with handlers' +
-                        ' in the form of function(user, session, callback) { ... }' +
-                        ' where the callback will be called with an error (possibly null).');
-                    return;
+                function userCheckCallback2() {
+                    // no userCheck handler event specified
+                    if (!link.params.on || !link.params.on.userCheck) {
+                        userCheckCallback(null);
+                    } else {
+                        M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
+                    }
                 }
 
                 if (params.on && typeof params.on.query === 'string') {
@@ -446,7 +447,7 @@ function getUser(params, username, password, callback, link) {
                             }
 
                             // user found
-                            M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
+                            userCheckCallback2();
                         });
                     });
                     return;
@@ -460,7 +461,8 @@ function getUser(params, username, password, callback, link) {
                         return callback('ERROR_USER_OR_PASS_NOT_VALID');
                     }
 
-                    M.emit(link.params.on.userCheck, user, link.session, userCheckCallback);
+                    // user found
+                    userCheckCallback2();
                 });
             });
         });

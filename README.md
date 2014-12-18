@@ -56,7 +56,7 @@ To register a handler event you edit the `application.json` file of the applicat
 
 - `userCheck`
 
-*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+*[optional]* You can define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
 
 - `userInfo`
 
@@ -88,7 +88,7 @@ and it must return through the `callback` a user information object, `userInfo` 
 
 - `userCheck`
 
-*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+*[optional]* You can define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
 
 ### The `reset` operation
 
@@ -98,7 +98,7 @@ and it must return through the `callback` a user information object, `userInfo` 
 
 - `userCheck`
 
-*[required]* It is required to define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
+*[optional]* You can define a `userCheck` handler event with handlers in the form of `function (user, session, callback) { ... }` where the callback should be called with an error (possibly `null`). Here you can perform additional checks on the user and optionally respond with an error.
 
 - `success`
 
