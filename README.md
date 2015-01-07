@@ -90,6 +90,10 @@ and it must return through the `callback` a user information object, `userInfo` 
 
 *[optional]* You can define a `userCheck` handler event with handlers in the form of `function (user, collection, session, callback) { ... }` where the callback should be called like this: `callback(err, user, collection)` where the error `err` can be `null`. Here you can perform additional checks on the user and optionally respond with an error.
 
+- `customReceiverHandler`
+
+*[optional]* You can define a `customReceiverHandler` handler event in the form of `function (emitedData, callback) { ... }` where the callback should be called like this: `callback(err, receiver)` where the error `err` can be `null`. Here you can change to whom the password reset email will be sent.
+
 ### The `reset` operation
 
 - `query`
@@ -103,6 +107,10 @@ and it must return through the `callback` a user information object, `userInfo` 
 - `success`
 
 *[optional]* You can define a `success` handler event with handlers in the form of `function (data) { ... }` where `data` is an object with `user` and `link` properties.
+
+- `templateFile`
+
+*[optional]* You can define a [jade](http://jade-lang.com/) template file to create a custom reset form.
 
 ## Changelog
 
