@@ -107,7 +107,6 @@ and it must return through the `callback` a user information object, `userInfo` 
 ## Changelog
 
 ### dev
-
  - Implemented a `userCheck` event in `login`, `forgot` and `reset` operations;
  - Reimplemented `userInfo` event from the `login` operation using `M.emit`;
  - Renamed `onSuccess` event from the `reset` operation to `on.success`;
@@ -115,6 +114,9 @@ and it must return through the `callback` a user information object, `userInfo` 
  - Removed dead code;
  - Updated the documentation in README.md.
  - Add fixes and new features here
+
+### v0.3.0
+ - Added support for jade template for the `forgot` operation
 
 ### v0.2.1
  - Updated to Bind v0.3.1
