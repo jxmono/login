@@ -27,7 +27,7 @@ exports.forgot = function(link) {
     }
 
     // get user
-    getUser(link.params, username, null, function(err, user, usersCol) {
+    getUser(link, username, null, function(err, user, usersCol) {
 
         // handle error
         if (err) {
@@ -183,7 +183,7 @@ exports.reset = function(link) {
         }
 
         // get user
-        getUser(link.params, username, null, function(err, user, usersCol) {
+        getUser(link, username, null, function(err, user, usersCol) {
 
             // handle error
             if (err) {
@@ -290,7 +290,7 @@ exports.login = function(link) {
     }
 
     // get user
-    getUser(link.params, username, password, function(err, user) {
+    getUser(link, username, password, function(err, user) {
 
         // handle error
         if (err) {
@@ -375,13 +375,13 @@ function generateToken(length) {
     return token;
 }
 
-function getUser(params, username, password, callback, link) {
+function getUser(link, username, password, callback) {
 
-    if (!params) {
+    if (!link.params) {
         return callback(new Error('Missing operation parameters'));
     }
 
-    M.datasource.resolve(params.ds, function(err, ds) {
+    M.datasource.resolve(link.params.ds, function(err, ds) {
 
         if (err) { return callback(err); }
 
@@ -394,29 +394,29 @@ function getUser(params, username, password, callback, link) {
                 if (err) { return callback(err); }
 
                 var filter = {};
-                filter[params.userkey] = new RegExp('^' + username + '$', 'i');
+                filter[link.params.userkey] = new RegExp('^' + username + '$', 'i');
 
                 if (password !== null) {
                     // 'md5-32/sha1-40/sha256-64/auto'
-                    switch (params.hash) {
+                    switch (link.params.hash) {
                         case 'md5':
                         case 'sha1':
-                            var hash = crypto.createHash(params.hash);
+                            var hash = crypto.createHash(link.params.hash);
                             hash.update(password);
                             password = hash.digest('hex').toLowerCase();
                             break;
                         case 'sha256':
                         case 'sha512':
-                            var hash = crypto.createHash(params.hash);
+                            var hash = crypto.createHash(link.params.hash);
                             hash.update(password);
                             password = hash.digest('hex').toLowerCase();
                             break;
                         case 'none':
                             break;
                         default:
-                            return callback(params.hash ? 'ERROR_MISSING_HASH_ALGORITHM' : 'ERROR_INVALID_HASH_ALGORITHM');
+                            return callback(link.params.hash ? 'ERROR_MISSING_HASH_ALGORITHM' : 'ERROR_INVALID_HASH_ALGORITHM');
                     }
-                    filter[params.passkey] = password;
+                    filter[link.params.passkey] = password;
                 }
 
                 function userCheckCallback(user, collection) {
@@ -427,7 +427,7 @@ function getUser(params, username, password, callback, link) {
                     }
                 }
 
-                if (params.on && typeof params.on.query === 'string') {
+                if (link.params.on && typeof link.params.on.query === 'string') {
                     var customData = {
                         filter: filter,
                         form: {
@@ -436,7 +436,7 @@ function getUser(params, username, password, callback, link) {
                         }
                     };
 
-                    M.emit(params.on.query, link, params, customData, function (err, data) {
+                    M.emit(link.params.on.query, link, link.params, customData, function (err, data) {
 
                         // handle error
                         if (err) { return callback(err); }
