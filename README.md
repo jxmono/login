@@ -117,6 +117,9 @@ and it must return through the `callback` a user information object, `userInfo` 
 ### dev
  - Add fixes and new features here
 
+### v0.4.1
+ - Updated to Bind `v0.3.3`, Events `v0.3.1` and Utils `v0.1.8`
+
 ### v0.4.0
  - Implemented a `userCheck` event in `login`, `forgot` and `reset` operations;
  - Reimplemented `userInfo` event from the `login` operation using `M.emit`;
