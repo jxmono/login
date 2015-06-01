@@ -114,8 +114,9 @@ and it must return through the `callback` a user information object, `userInfo` 
 
 ## Changelog
 
-### dev
- - Add fixes and new features here
+### v0.5.0
+ - transferred the module to the new jxMono organization
+ - updated Bind to `v0.4.0`, Events to `v0.4.0`, Utils to `v0.2.0`
 
 ### v0.4.1
  - Updated to Bind `v0.3.3`, Events `v0.3.1` and Utils `v0.1.8`
