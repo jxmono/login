@@ -1,12 +1,12 @@
 {
     "source": "github",
-    "owner": "jillix",
+    "owner": "jxmono",
     "name": "login",
     "dependencies": [
         "/login.js",
-        "github/jillix/bind/v0.3.3",
-        "github/jillix/events/v0.3.1",
-        "github/jillix/utils/v0.1.8"
+        "github/jxmono/bind/v0.4.0",
+        "github/jxmono/events/v0.4.0",
+        "github/jxmono/utils/v0.2.0"
     ],
     "operations": [
         { "file": "operations.js", "function": "login" },
