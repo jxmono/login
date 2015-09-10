@@ -442,7 +442,7 @@ function getUser(link, username, password, callback) {
                         if (err) { return callback(err); }
 
                         // find one
-                        collection.findOne(filter, function(err, user) {
+                        collection.findOne(data.filter, function(err, user) {
 
                             // handle error
                             if (err) { return callback(err); }
